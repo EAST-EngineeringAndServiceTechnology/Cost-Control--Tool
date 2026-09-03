@@ -3,833 +3,972 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Electrical Project Cost Control Dashboard</title>
+  <title>Electrical Project Cost Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
-      --bg: #0f1419;
-      --surface: #1a2332;
-      --surface2: #243044;
-      --border: #2d3a4f;
-      --text: #e8eef7;
-      --text-muted: #8b9bb4;
-      --primary: #3b82f6;
-      --primary-dim: #2563eb;
-      --success: #22c55e;
-      --warning: #eab308;
-      --critical: #f97316;
-      --danger: #ef4444;
-      --accent: #06b6d4;
-      --radius: 12px;
-      --sidebar-w: 260px;
-      --shadow: 0 4px 24px rgba(0,0,0,0.35);
+      --bg: #0f1419; --surface: #1a2332; --surface2: #243044; --border: #2d3a4f;
+      --text: #e8eef7; --text-muted: #8b9bb4; --primary: #3b82f6; --primary-dim: #2563eb;
+      --success: #22c55e; --warning: #eab308; --critical: #f97316; --danger: #ef4444;
+      --accent: #06b6d4; --radius: 12px; --sidebar-w: 250px; --shadow: 0 4px 24px rgba(0,0,0,0.35);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      line-height: 1.5;
-      display: flex;
-    }
-    .sidebar {
-      width: var(--sidebar-w);
-      min-width: var(--sidebar-w);
-      background: linear-gradient(180deg, #15202b 0%, #0f1419 100%);
-      border-right: 1px solid var(--border);
-      height: 100vh;
-      position: sticky;
-      top: 0;
-      display: flex;
-      flex-direction: column;
-      z-index: 50;
-    }
-    .sidebar-brand {
-      padding: 1.25rem 1.25rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .logo {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      border-radius: 10px;
-      display: grid; place-items: center;
-      font-size: 1.3rem; flex-shrink: 0;
-    }
-    .brand-text h1 { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.02em; }
-    .brand-text span { font-size: 0.7rem; color: var(--text-muted); }
-    .sidebar-nav { padding: 1rem 0.75rem; flex: 1; overflow-y: auto; }
-    .nav-section {
-      font-size: 0.65rem; font-weight: 700; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.06em;
-      padding: 0.75rem 0.75rem 0.4rem;
-    }
-    .nav-item {
-      display: flex; align-items: center; gap: 0.65rem;
-      padding: 0.7rem 0.85rem; border-radius: 10px;
-      color: var(--text-muted); font-size: 0.88rem; font-weight: 500;
-      cursor: pointer; transition: all 0.15s;
-      border: none; background: none; width: 100%; text-align: left; font-family: inherit;
-    }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; background: radial-gradient(ellipse at 30% 20%, #1e3a5f 0%, var(--bg) 55%); }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem 2.25rem; width: 100%; max-width: 400px; box-shadow: var(--shadow); }
+    .login-logo { width: 52px; height: 52px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 14px; display: grid; place-items: center; font-size: 1.6rem; margin: 0 auto 1rem; }
+    .login-card h1 { text-align: center; font-size: 1.35rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .login-card .sub { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.75rem; }
+    .login-hint { margin-top: 1.25rem; padding: 0.85rem; background: var(--surface2); border-radius: 10px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.6; }
+    .login-hint strong { color: var(--text); }
+    .app { display: none; min-height: 100vh; }
+    .app.show { display: flex; }
+    .sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: linear-gradient(180deg, #15202b 0%, #0f1419 100%); border-right: 1px solid var(--border); height: 100vh; position: sticky; top: 0; display: flex; flex-direction: column; z-index: 50; }
+    .sidebar-brand { padding: 1.15rem; display: flex; align-items: center; gap: 0.7rem; border-bottom: 1px solid var(--border); }
+    .logo { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 10px; display: grid; place-items: center; font-size: 1.2rem; }
+    .brand-text h1 { font-size: 0.9rem; font-weight: 700; }
+    .brand-text span { font-size: 0.68rem; color: var(--text-muted); }
+    .sidebar-nav { padding: 0.85rem 0.65rem; flex: 1; overflow-y: auto; }
+    .nav-section { font-size: 0.62rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.65rem 0.7rem 0.35rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.8rem; border-radius: 10px; color: var(--text-muted); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
     .nav-item:hover { background: var(--surface2); color: var(--text); }
-    .nav-item.active { background: rgba(59, 130, 246, 0.18); color: #93c5fd; }
-    .nav-item .icon { font-size: 1.1rem; width: 22px; text-align: center; }
-    .sidebar-footer {
-      padding: 1rem; border-top: 1px solid var(--border);
-      font-size: 0.7rem; color: var(--text-muted); text-align: center;
-    }
-    .menu-toggle {
-      display: none; position: fixed; top: 0.85rem; left: 0.85rem; z-index: 60;
-      background: var(--surface); border: 1px solid var(--border); color: var(--text);
-      width: 42px; height: 42px; border-radius: 10px; font-size: 1.3rem; cursor: pointer;
-    }
+    .nav-item.active { background: rgba(59,130,246,0.18); color: #93c5fd; }
+    .nav-item .icon { font-size: 1.05rem; width: 20px; text-align: center; }
+    .sidebar-user { padding: 0.9rem 1rem; border-top: 1px solid var(--border); font-size: 0.78rem; }
+    .sidebar-user .name { font-weight: 600; }
+    .sidebar-user .role { color: var(--text-muted); font-size: 0.7rem; }
+    .menu-toggle { display: none; position: fixed; top: 0.8rem; left: 0.8rem; z-index: 60; background: var(--surface); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 10px; font-size: 1.2rem; cursor: pointer; }
     .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-    .topbar {
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 0.9rem 1.75rem; display: flex; align-items: center;
-      justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
-      position: sticky; top: 0; z-index: 40;
-    }
-    .topbar h2 { font-size: 1.15rem; font-weight: 700; }
-    .topbar-meta { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-    .badge {
-      background: var(--surface2); border: 1px solid var(--border);
-      padding: 0.35rem 0.75rem; border-radius: 8px; font-size: 0.78rem; color: var(--text-muted);
-    }
+    .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.85rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.65rem; position: sticky; top: 0; z-index: 40; }
+    .topbar h2 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-meta { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
+    .badge { background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.75rem; color: var(--text-muted); }
     .badge strong { color: var(--text); }
-    .content { padding: 1.5rem 1.75rem 2.5rem; max-width: 1400px; }
-    .view { display: none; }
-    .view.active { display: block; }
-    .grid { display: grid; gap: 1.15rem; }
-    .grid-kpi { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 1.15rem; }
+    .content { padding: 1.35rem 1.5rem 2.5rem; max-width: 1400px; }
+    .view { display: none; } .view.active { display: block; }
+    .grid { display: grid; gap: 1.1rem; }
+    .grid-kpi { grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); margin-bottom: 1.1rem; }
     .grid-2 { grid-template-columns: 1.3fr 1fr; }
-    .grid-2-equal { grid-template-columns: 1fr 1fr; }
+    .grid-projects { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
     @media (max-width: 900px) {
-      .grid-2, .grid-2-equal { grid-template-columns: 1fr; }
-      .sidebar { position: fixed; left: -280px; transition: left 0.25s ease; box-shadow: 4px 0 30px rgba(0,0,0,0.4); }
+      .grid-2 { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; left: -270px; transition: left 0.25s; }
       .sidebar.open { left: 0; }
       .menu-toggle { display: grid; place-items: center; }
-      .content { padding: 1rem; padding-top: 3.5rem; }
-      .topbar { padding-left: 3.5rem; }
+      .content { padding: 1rem; padding-top: 3.4rem; }
+      .topbar { padding-left: 3.4rem; }
+      .app.show { display: block; }
     }
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.2rem; box-shadow: var(--shadow);
-    }
-    .card-title {
-      font-size: 0.78rem; font-weight: 600; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.7rem;
-    }
-    .section-title {
-      font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;
-      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
-    }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.15rem; box-shadow: var(--shadow); }
+    .card-title { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.65rem; }
+    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.65rem; flex-wrap: wrap; }
     .kpi { position: relative; overflow: hidden; }
     .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-    .kpi-budget::before { background: var(--primary); }
-    .kpi-actual::before { background: var(--accent); }
-    .kpi-remain::before { background: var(--success); }
-    .kpi-used::before { background: var(--warning); }
-    .kpi-status::before { background: var(--danger); }
-    .kpi-value { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-    .kpi-label { font-size: 0.75rem; color: var(--text-muted); }
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      padding: 0.4rem 0.85rem; border-radius: 999px; font-weight: 700; font-size: 0.85rem;
-    }
+    .kpi-sell::before { background: #a78bfa; } .kpi-budget::before { background: var(--primary); }
+    .kpi-actual::before { background: var(--accent); } .kpi-profit::before { background: var(--success); }
+    .kpi-margin::before { background: var(--warning); } .kpi-status::before { background: var(--danger); }
+    .kpi-value { font-size: 1.35rem; font-weight: 800; }
+    .kpi-label { font-size: 0.72rem; color: var(--text-muted); }
+    .status-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.75rem; border-radius: 999px; font-weight: 700; font-size: 0.8rem; }
     .status-ontrack { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
     .status-warning { background: rgba(234,179,8,0.15); color: var(--warning); border: 1px solid rgba(234,179,8,0.3); }
     .status-critical { background: rgba(249,115,22,0.15); color: var(--critical); border: 1px solid rgba(249,115,22,0.3); }
     .status-over { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-    .progress-wrap { margin-top: 0.5rem; }
-    .progress-label {
-      display: flex; justify-content: space-between; font-size: 0.75rem;
-      color: var(--text-muted); margin-bottom: 0.25rem;
-    }
-    .progress-bar { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
-    .fill-blue { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
-    .fill-green { background: linear-gradient(90deg, #22c55e, #16a34a); }
-    .fill-yellow { background: linear-gradient(90deg, #eab308, #f59e0b); }
-    .fill-orange { background: linear-gradient(90deg, #f97316, #ea580c); }
-    .fill-red { background: linear-gradient(90deg, #ef4444, #dc2626); }
-    .mini-bar { height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; margin-top: 3px; min-width: 50px; }
-    .mini-fill { height: 100%; border-radius: 99px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .progress-wrap { margin-top: 0.45rem; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+    .progress-bar { height: 7px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 99px; transition: width 0.5s; }
+    .fill-blue { background: linear-gradient(90deg,#3b82f6,#06b6d4); }
+    .fill-green { background: linear-gradient(90deg,#22c55e,#16a34a); }
+    .fill-yellow { background: linear-gradient(90deg,#eab308,#f59e0b); }
+    .fill-orange { background: linear-gradient(90deg,#f97316,#ea580c); }
+    .fill-red { background: linear-gradient(90deg,#ef4444,#dc2626); }
+    .fill-purple { background: linear-gradient(90deg,#a78bfa,#8b5cf6); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
     @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
-    .form-group label {
-      display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.25rem;
-    }
-    .input-cell {
-      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-      padding: 0.45rem 0.55rem; border-radius: 8px; font-size: 0.82rem;
-      width: 100%; font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .input-cell:focus {
-      outline: none; border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
-    }
-    .input-cell.currency { text-align: right; }
-    .btn {
-      background: var(--primary); color: white; border: none;
-      padding: 0.55rem 1.15rem; border-radius: 8px; font-weight: 600;
-      font-size: 0.85rem; cursor: pointer; transition: background 0.15s, transform 0.1s;
-      display: inline-flex; align-items: center; gap: 0.4rem; font-family: inherit;
-    }
-    .btn:hover { background: var(--primary-dim); transform: translateY(-1px); }
+    .form-group label { display: block; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.25rem; }
+    .input-cell { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.65rem; border-radius: 8px; font-size: 0.88rem; width: 100%; font-family: inherit; }
+    .input-cell:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+    .btn { background: var(--primary); color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; font-family: inherit; }
+    .btn:hover { background: var(--primary-dim); }
     .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-ghost:hover { background: var(--surface2); }
     .btn-danger { background: transparent; border: 1px solid rgba(239,68,68,0.4); color: var(--danger); }
-    .btn-danger:hover { background: rgba(239,68,68,0.15); }
     .btn-sm { padding: 0.28rem 0.55rem; font-size: 0.75rem; }
     .btn-success { background: var(--success); }
-    .btn-success:hover { background: #16a34a; }
     .btn-accent { background: var(--accent); }
-    .btn-accent:hover { background: #0891b2; }
-    .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.25rem; }
+    .btn-block { width: 100%; justify-content: center; padding: 0.7rem; }
+    .actions { display: flex; gap: 0.55rem; flex-wrap: wrap; margin-top: 1.15rem; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-    th {
-      text-align: left; padding: 0.5rem 0.5rem; color: var(--text-muted);
-      font-weight: 600; font-size: 0.65rem; text-transform: uppercase;
-      letter-spacing: 0.03em; border-bottom: 1px solid var(--border); white-space: nowrap;
-    }
-    td { padding: 0.5rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    th { text-align: left; padding: 0.55rem 0.65rem; color: var(--text-muted); font-weight: 600; font-size: 0.65rem; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 0.55rem 0.65rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
     .num { font-variant-numeric: tabular-nums; text-align: right; }
-    .chart-box { position: relative; height: 220px; margin-top: 0.5rem; }
-    .threshold-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-    .threshold-row label { flex: 1; font-size: 0.9rem; }
-    .threshold-row input { width: 80px; text-align: center; }
-    .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-    .dot-green { background: var(--success); }
-    .dot-yellow { background: var(--warning); }
-    .dot-orange { background: var(--critical); }
-    .dot-red { background: var(--danger); }
-    .hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
-    .toast {
-      position: fixed; bottom: 1.5rem; right: 1.5rem;
-      background: var(--surface2); border: 1px solid var(--border);
-      padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.9rem;
-      font-weight: 500; box-shadow: var(--shadow);
-      transform: translateY(120%); opacity: 0; transition: all 0.3s ease; z-index: 300;
-    }
+    .chart-box { position: relative; height: 210px; margin-top: 0.4rem; }
+    .threshold-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.7rem; }
+    .threshold-row label { flex: 1; font-size: 0.88rem; }
+    .threshold-row input { width: 75px; text-align: center; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green { background: var(--success); } .dot-yellow { background: var(--warning); }
+    .dot-orange { background: var(--critical); } .dot-red { background: var(--danger); }
+    .hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.45rem; }
+    .toast { position: fixed; bottom: 1.4rem; right: 1.4rem; background: var(--surface2); border: 1px solid var(--border); padding: 0.8rem 1.15rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; box-shadow: var(--shadow); transform: translateY(120%); opacity: 0; transition: all 0.3s; z-index: 300; }
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.success { border-left: 4px solid var(--success); }
     .toast.error { border-left: 4px solid var(--danger); }
-    .empty { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem; }
+    .empty { text-align: center; padding: 2rem; color: var(--text-muted); }
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 45; }
     .overlay.open { display: block; }
-    .add-box {
-      background: var(--surface2); border: 1px dashed var(--border);
-      border-radius: 10px; padding: 1rem; margin-bottom: 1.25rem;
-    }
-    .file-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-top: 0.5rem; }
-    .file-row input[type="file"] { font-size: 0.85rem; color: var(--text-muted); max-width: 220px; }
-    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
-    .time-tag {
-      display: inline-block; font-size: 0.68rem; padding: 0.12rem 0.4rem;
-      border-radius: 4px; background: rgba(59,130,246,0.15); color: #93c5fd;
-    }
+    .add-box { background: var(--surface2); border: 1px dashed var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 1.15rem; }
+    .file-row { display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; margin-top: 0.45rem; }
+    .file-row input[type="file"] { font-size: 0.82rem; color: var(--text-muted); max-width: 210px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.4rem 0; }
+    .time-tag { display: inline-block; font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: 4px; background: rgba(59,130,246,0.15); color: #93c5fd; }
     .time-done { background: rgba(34,197,94,0.15); color: #86efac; }
     .time-late { background: rgba(239,68,68,0.15); color: #fca5a5; }
     .time-soon { background: rgba(234,179,8,0.15); color: #fde047; }
-    .var-pos { color: var(--success); }
-    .var-neg { color: var(--danger); }
-    .subhead {
-      font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.04em; margin: 1rem 0 0.5rem;
+    .var-pos { color: var(--success); } .var-neg { color: var(--danger); }
+    .project-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; cursor: pointer; transition: border-color 0.2s, transform 0.15s; box-shadow: var(--shadow); }
+    .project-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .project-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .project-card .code { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+    .project-card .meta { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.75rem; }
+    .project-card .meta span strong { color: var(--text); }
+    .summary-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .summary-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1.15rem; min-width: 130px; }
+    .summary-stat .val { font-size: 1.3rem; font-weight: 800; }
+    .summary-stat .lbl { font-size: 0.72rem; color: var(--text-muted); }
+    .profit-pos { color: var(--success); } .profit-neg { color: var(--danger); }
+    .ship-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+      white-space: nowrap;
     }
+    .ship-express { background: rgba(234,179,8,0.15); color: #fde047; }
+    .ship-flight { background: rgba(59,130,246,0.15); color: #93c5fd; }
+    .ship-sea { background: rgba(6,182,212,0.15); color: #67e8f9; }
+    .ship-local { background: rgba(34,197,94,0.15); color: #86efac; }
+    .ship-none { color: var(--text-muted); }
+    .fx-row { display: grid; grid-template-columns: 80px 1fr 1fr; gap: 0.6rem; align-items: center; margin-bottom: 0.55rem; }
+    .fx-row label { font-size: 0.85rem; font-weight: 600; }
+    .cur-badge {
+      display: inline-block; padding: 0.12rem 0.45rem; border-radius: 5px;
+      font-size: 0.7rem; font-weight: 700; background: var(--surface2); border: 1px solid var(--border);
+    }
+    .cur-CHF { color: #f472b6; } .cur-USD { color: #86efac; }
+    .cur-EUR { color: #93c5fd; } .cur-EGP { color: #fde047; }
+
+    .items-view-toggle { display: flex; gap: 0.4rem; }
+    .items-view-toggle button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .item-blocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; margin-bottom: 1.1rem; }
+    .item-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.05rem 1.15rem; box-shadow: var(--shadow); border-top: 3px solid var(--border); }
+    .item-block.st-ontrack { border-top-color: var(--success); }
+    .item-block.st-warning { border-top-color: var(--warning); }
+    .item-block.st-critical { border-top-color: var(--critical); }
+    .item-block.st-over { border-top-color: var(--danger); }
+    .item-block-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .item-block-head h4 { font-size: 0.94rem; font-weight: 700; line-height: 1.3; }
+    .item-numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin-bottom: 0.75rem; }
+    .item-num { background: var(--surface2); border-radius: 8px; padding: 0.5rem 0.65rem; }
+    .item-num-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.2rem; }
+    .item-num-value { font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .item-block .progress-bar { margin-bottom: 0.8rem; }
+    .item-sub { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.76rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 0.7rem; }
+    .item-sub strong { color: var(--text); font-variant-numeric: tabular-nums; }
+    .item-sub .row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .item-group-title { font-size: 0.62rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0.75rem 0 0.4rem; }
+    .item-group-title:first-of-type { margin-top: 0.85rem; padding-top: 0.7rem; border-top: 1px solid var(--border); }
+    .item-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.8rem; }
   </style>
 </head>
 <body>
 
-  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="logo">⚡</div>
-      <div class="brand-text">
-        <h1>Cost Control</h1>
-        <span>Electrical Project</span>
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">⚡</div>
+      <h1>Cost Control</h1>
+      <p class="sub">Manager sign-in · Electrical projects</p>
+      <div class="form-group" style="margin-bottom:0.9rem">
+        <label>Username</label>
+        <input class="input-cell" id="login-user" placeholder="manager" />
       </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">Overview</div>
-      <button class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">
-        <span class="icon">📊</span> Dashboard
-      </button>
-      <div class="nav-section">Edit Data</div>
-      <button class="nav-item" data-view="project" onclick="showView('project')">
-        <span class="icon">📁</span> Project Info
-      </button>
-      <button class="nav-item" data-view="budget" onclick="showView('budget')">
-        <span class="icon">💰</span> Budget + Time
-      </button>
-      <button class="nav-item" data-view="costs" onclick="showView('costs')">
-        <span class="icon">📝</span> Actual Costs
-      </button>
-      <button class="nav-item" data-view="alarms" onclick="showView('alarms')">
-        <span class="icon">🔔</span> Alarm Thresholds
-      </button>
-      <div class="nav-section">Save / Load</div>
-      <button class="nav-item" data-view="export" onclick="showView('export')">
-        <span class="icon">💾</span> JSON Save / Load
-      </button>
-      <div class="nav-section">Tools</div>
-      <button class="nav-item" data-view="help" onclick="showView('help')">
-        <span class="icon">❓</span> How to Use
-      </button>
-      <button class="nav-item" onclick="resetAllData()">
-        <span class="icon">🗑️</span> Reset Sample Data
-      </button>
-    </nav>
-    <div class="sidebar-footer">Est. & Actual time per band</div>
-  </aside>
-
-  <div class="main">
-    <div class="topbar">
-      <h2 id="page-title">Dashboard</h2>
-      <div class="topbar-meta">
-        <span class="badge">Code: <strong id="hdr-code">EL-2026-001</strong></span>
-        <span class="badge">Today: <strong id="hdr-today"></strong></span>
-        <span class="badge"><span id="hdr-status">🟢 ON TRACK</span></span>
+      <div class="form-group" style="margin-bottom:1.15rem">
+        <label>Password</label>
+        <input type="password" class="input-cell" id="login-pass" placeholder="••••••••" />
       </div>
-    </div>
-
-    <div class="content">
-
-      <!-- DASHBOARD -->
-      <div class="view active" id="view-dashboard">
-        <div class="grid grid-kpi">
-          <div class="card kpi kpi-budget">
-            <div class="card-title">Estimated Budget</div>
-            <div class="kpi-value" id="kpi-budget">$0</div>
-            <div class="kpi-label">Total planned</div>
-          </div>
-          <div class="card kpi kpi-actual">
-            <div class="card-title">Actual Cost</div>
-            <div class="kpi-value" id="kpi-actual">$0</div>
-            <div class="kpi-label">Spent to date</div>
-          </div>
-          <div class="card kpi kpi-remain">
-            <div class="card-title">Remaining</div>
-            <div class="kpi-value" id="kpi-remain">$0</div>
-            <div class="kpi-label">Budget left</div>
-          </div>
-          <div class="card kpi kpi-used">
-            <div class="card-title">Budget Used</div>
-            <div class="kpi-value" id="kpi-used">0%</div>
-            <div class="progress-wrap">
-              <div class="progress-bar">
-                <div class="progress-fill fill-blue" id="bar-used" style="width:0%"></div>
-              </div>
-            </div>
-          </div>
-          <div class="card kpi kpi-status">
-            <div class="card-title">Status / Alarm</div>
-            <div id="kpi-status" class="status-badge status-ontrack">🟢 ON TRACK</div>
-            <div class="kpi-label" id="kpi-variance" style="margin-top:0.35rem">Variance: $0</div>
-          </div>
-        </div>
-
-        <div class="grid grid-2" style="margin-bottom:1.15rem">
-          <div class="card">
-            <div class="card-title">Overall Project Time vs Cost</div>
-            <div style="margin-bottom:0.85rem">
-              <div class="progress-label"><span>⏱ Project Time</span><span id="lbl-time">0%</span></div>
-              <div class="progress-bar"><div class="progress-fill fill-blue" id="bar-time" style="width:0%"></div></div>
-              <div class="kpi-label" id="lbl-days" style="margin-top:0.3rem">—</div>
-            </div>
-            <div style="margin-bottom:0.85rem">
-              <div class="progress-label"><span>💰 Cost</span><span id="lbl-cost">0%</span></div>
-              <div class="progress-bar"><div class="progress-fill fill-green" id="bar-cost" style="width:0%"></div></div>
-            </div>
-            <div id="progress-insight" style="font-size:0.82rem;color:var(--text-muted);padding:0.65rem;background:var(--surface2);border-radius:8px;">—</div>
-            <div class="chart-box" style="height:150px"><canvas id="chartProgress"></canvas></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Budget by Category</div>
-            <div class="chart-box"><canvas id="chartBudget"></canvas></div>
-          </div>
-        </div>
-
-        <!-- Per-band: cost + estimated time + actual time -->
-        <div class="card" style="margin-bottom:1.15rem">
-          <div class="section-title">
-            <span>Cost & Time per Category</span>
-            <button class="btn btn-sm btn-ghost" onclick="showView('budget')">Edit Budget + Time</button>
-          </div>
-          <div class="table-wrap" style="max-height:420px;overflow-y:auto">
-            <table>
-              <thead>
-                <tr>
-                  <th>Category</th>
-                  <th class="num">Est. Cost</th>
-                  <th class="num">Act. Cost</th>
-                  <th class="num">Cost %</th>
-                  <th class="num">Est. Days</th>
-                  <th class="num">Act. Days</th>
-                  <th class="num">Time Var.</th>
-                  <th>Est. Period</th>
-                  <th>Actual Period</th>
-                  <th>Time Status</th>
-                </tr>
-              </thead>
-              <tbody id="band-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="section-title">
-            <span>Recent Costs</span>
-            <button class="btn btn-sm" onclick="showView('costs')">＋ Add / Edit</button>
-          </div>
-          <div class="table-wrap" style="max-height:200px;overflow-y:auto">
-            <table>
-              <thead><tr><th>Date</th><th>Category</th><th class="num">Amount</th></tr></thead>
-              <tbody id="recent-cost-tbody"></tbody>
-            </table>
-          </div>
-        </div>
+      <button class="btn btn-block" onclick="doLogin()">Sign In</button>
+      <div class="login-hint">
+        <strong>Demo accounts</strong><br>
+        manager / 1234 &nbsp;·&nbsp; admin / admin
       </div>
-
-      <!-- PROJECT -->
-      <div class="view" id="view-project">
-        <div class="card" style="max-width:640px">
-          <div class="section-title">📁 Project Information</div>
-          <p class="hint" style="margin-bottom:1.25rem">Overall project dates. Category estimated/actual times are in Budget + Time.</p>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Project Name</label>
-              <input class="input-cell" id="f-name" />
-            </div>
-            <div class="form-group">
-              <label>Project Code</label>
-              <input class="input-cell" id="f-code" />
-            </div>
-            <div class="form-group">
-              <label>Project Manager</label>
-              <input class="input-cell" id="f-manager" />
-            </div>
-            <div class="form-group">
-              <label>Client / Owner</label>
-              <input class="input-cell" id="f-client" placeholder="Optional" />
-            </div>
-            <div class="form-group">
-              <label>Project Start Date</label>
-              <input type="date" class="input-cell" id="f-start" />
-            </div>
-            <div class="form-group">
-              <label>Project End Date</label>
-              <input type="date" class="input-cell" id="f-end" />
-            </div>
-          </div>
-          <div class="actions">
-            <button class="btn btn-success" onclick="saveProject()">💾 Save Project Info</button>
-            <button class="btn btn-ghost" onclick="showView('dashboard')">Back to Dashboard</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- BUDGET + TIME (est + actual) -->
-      <div class="view" id="view-budget">
-        <div class="card">
-          <div class="section-title">
-            <span>💰 Budget + Estimated & Actual Time</span>
-            <span class="badge">Total: <strong id="budget-total-label">$0</strong></span>
-          </div>
-
-          <div class="add-box">
-            <div style="font-weight:600;margin-bottom:0.75rem;font-size:0.9rem">＋ Add new category</div>
-            <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
-              <div class="form-group">
-                <label>Category Name</label>
-                <input class="input-cell" id="new-cat-name" placeholder="e.g. Solar, CCTV" />
-              </div>
-              <div class="form-group">
-                <label>Estimated ($)</label>
-                <input type="number" class="input-cell" id="new-cat-amount" min="0" step="100" placeholder="0" />
-              </div>
-              <div class="form-group">
-                <label>Est. Start</label>
-                <input type="date" class="input-cell" id="new-cat-est-start" />
-              </div>
-              <div class="form-group">
-                <label>Est. End</label>
-                <input type="date" class="input-cell" id="new-cat-est-end" />
-              </div>
-            </div>
-            <button class="btn btn-accent btn-sm" style="margin-top:0.5rem" onclick="addCategory()">＋ Add Category</button>
-          </div>
-
-          <p class="hint" style="margin-bottom:0.75rem">
-            <strong>Estimated time</strong> = planned start/end. <strong>Actual time</strong> = real start/end (leave blank if not started/finished).
-          </p>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Category</th>
-                  <th class="num">Est. $</th>
-                  <th>Est. Start</th>
-                  <th>Est. End</th>
-                  <th class="num">Est. Days</th>
-                  <th>Act. Start</th>
-                  <th>Act. End</th>
-                  <th class="num">Act. Days</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="budget-edit-tbody"></tbody>
-            </table>
-          </div>
-          <div class="actions">
-            <button class="btn btn-success" onclick="saveBudget()">💾 Save Budget + Time</button>
-            <button class="btn btn-ghost" onclick="showView('dashboard')">Back to Dashboard</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- COSTS -->
-      <div class="view" id="view-costs">
-        <div class="grid grid-2" style="align-items:start">
-          <div class="card">
-            <div class="section-title">＋ Add New Cost</div>
-            <div class="form-grid" style="grid-template-columns:1fr">
-              <div class="form-group">
-                <label>Date</label>
-                <input type="date" class="input-cell" id="c-date" />
-              </div>
-              <div class="form-group">
-                <label>Category</label>
-                <select class="input-cell" id="c-category"></select>
-              </div>
-              <div class="form-group">
-                <label>Or type new category</label>
-                <input class="input-cell" id="c-category-new" placeholder="Optional" />
-              </div>
-              <div class="form-group">
-                <label>Description / Invoice</label>
-                <input class="input-cell" id="c-desc" placeholder="e.g. INV-2045" />
-              </div>
-              <div class="form-group">
-                <label>Vendor</label>
-                <input class="input-cell" id="c-vendor" placeholder="Optional" />
-              </div>
-              <div class="form-group">
-                <label>Amount ($)</label>
-                <input type="number" class="input-cell" id="c-amount" min="0" step="0.01" placeholder="0.00" />
-              </div>
-            </div>
-            <div class="actions">
-              <button class="btn btn-success" onclick="addCost()">💾 Add Cost</button>
-            </div>
-          </div>
-          <div class="card">
-            <div class="section-title">
-              <span>All Cost Entries</span>
-              <span class="badge">Total: <strong id="cost-total-label">$0</strong></span>
-            </div>
-            <div class="table-wrap" style="max-height:520px;overflow-y:auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th class="num">Amount</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="cost-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="actions" style="margin-top:1rem">
-          <button class="btn btn-ghost" onclick="showView('dashboard')">Back to Dashboard</button>
-        </div>
-      </div>
-
-      <!-- ALARMS -->
-      <div class="view" id="view-alarms">
-        <div class="card" style="max-width:520px">
-          <div class="section-title">🔔 Alarm Thresholds</div>
-          <p class="hint" style="margin-bottom:1.25rem">When actual cost reaches these % of total budget, status changes.</p>
-          <div class="threshold-row">
-            <span class="dot dot-green"></span>
-            <label>🟢 On Track — below</label>
-            <input type="number" class="input-cell" id="th-warning" value="80" min="1" max="99" />
-            <span style="font-size:0.85rem;color:var(--text-muted)">%</span>
-          </div>
-          <div class="threshold-row">
-            <span class="dot dot-yellow"></span>
-            <label>🟡 Warning — ≥</label>
-            <span style="font-size:0.9rem;font-weight:600" id="lbl-th-warn">80%</span>
-          </div>
-          <div class="threshold-row">
-            <span class="dot dot-orange"></span>
-            <label>🟠 Critical — ≥</label>
-            <input type="number" class="input-cell" id="th-critical" value="95" min="1" max="100" />
-            <span style="font-size:0.85rem;color:var(--text-muted)">%</span>
-          </div>
-          <div class="threshold-row">
-            <span class="dot dot-red"></span>
-            <label>🔴 Over Budget — ≥</label>
-            <span style="font-size:0.9rem;font-weight:600">100%</span>
-          </div>
-          <div class="actions">
-            <button class="btn btn-success" onclick="saveAlarms()">💾 Save Thresholds</button>
-            <button class="btn btn-ghost" onclick="showView('dashboard')">Back to Dashboard</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- EXPORT -->
-      <div class="view" id="view-export">
-        <div class="card" style="max-width:640px">
-          <div class="section-title">💾 Save / Load as JSON</div>
-          <p class="hint" style="margin-bottom:1.25rem">Includes estimated & actual times for every category.</p>
-          <div style="margin-bottom:1.5rem">
-            <div style="font-weight:600;margin-bottom:0.5rem">Export</div>
-            <button class="btn btn-success" onclick="exportJSON()">⬇ Download JSON File</button>
-          </div>
-          <hr class="divider" />
-          <div>
-            <div style="font-weight:600;margin-bottom:0.5rem">Import</div>
-            <div class="file-row">
-              <input type="file" id="import-file" accept=".json,application/json" />
-              <button class="btn btn-accent" onclick="importJSON()">⬆ Load JSON File</button>
-            </div>
-          </div>
-          <div class="actions" style="margin-top:1.5rem">
-            <button class="btn btn-ghost" onclick="showView('dashboard')">Back to Dashboard</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- HELP -->
-      <div class="view" id="view-help">
-        <div class="card" style="max-width:720px">
-          <div class="section-title">❓ How to Use</div>
-          <ol style="padding-left:1.25rem;line-height:1.9;font-size:0.95rem">
-            <li><strong>Project Info</strong> — Overall project start & end.</li>
-            <li><strong>Budget + Time</strong> —
-              <ul style="margin:0.3rem 0 0.5rem 1rem">
-                <li><strong>Estimated time</strong>: planned start & end → Est. Days</li>
-                <li><strong>Actual time</strong>: real start & end → Act. Days</li>
-                <li>Time variance = Actual days − Estimated days (positive = late)</li>
-              </ul>
-            </li>
-            <li><strong>Dashboard</strong> — Cost % and time status per category.</li>
-            <li><strong>Actual Costs</strong> — Log expenses by category.</li>
-            <li><strong>JSON Save / Load</strong> — Backup or restore everything.</li>
-          </ol>
-          <div class="actions">
-            <button class="btn" onclick="showView('dashboard')">Go to Dashboard</button>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
+  <div class="app" id="app">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo">⚡</div>
+        <div class="brand-text"><h1>Cost Control</h1><span>Manager Portal</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+        <button class="nav-item active" data-view="home" onclick="showView('home')"><span class="icon">🏠</span> All Projects</button>
+        <div class="nav-section" id="nav-project-section" style="display:none">Current Project</div>
+        <button class="nav-item" data-view="dashboard" id="nav-dashboard" style="display:none" onclick="showView('dashboard')"><span class="icon">📊</span> Dashboard</button>
+        <button class="nav-item" data-view="project" id="nav-project" style="display:none" onclick="showView('project')"><span class="icon">📁</span> Project Info</button>
+        <button class="nav-item" data-view="budget" id="nav-budget" style="display:none" onclick="showView('budget')"><span class="icon">💰</span> Budget + Time</button>
+        <button class="nav-item" data-view="costs" id="nav-costs" style="display:none" onclick="showView('costs')"><span class="icon">📝</span> Actual (received)</button>
+        <button class="nav-item" data-view="alarms" id="nav-alarms" style="display:none" onclick="showView('alarms')"><span class="icon">🔔</span> Alarms</button>
+        <button class="nav-item" data-view="currency" id="nav-currency" style="display:none" onclick="showView('currency')"><span class="icon">💱</span> Currency Risk</button>
+        <div class="nav-section">Data</div>
+        <button class="nav-item" data-view="export" onclick="showView('export')"><span class="icon">💾</span> JSON Save / Load</button>
+        <button class="nav-item" data-view="help" onclick="showView('help')"><span class="icon">❓</span> Help</button>
+      </nav>
+      <div class="sidebar-user">
+        <div class="name" id="user-name">Manager</div>
+        <div class="role">Signed in</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:0.5rem;width:100%;justify-content:center" onclick="doLogout()">Sign Out</button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <h2 id="page-title">All Projects</h2>
+        <div class="topbar-meta">
+          <span class="badge" id="hdr-project-badge" style="display:none">Project: <strong id="hdr-code">—</strong></span>
+          <span class="badge">Today: <strong id="hdr-today"></strong></span>
+          <span class="badge" id="hdr-status-wrap" style="display:none"><span id="hdr-status">🟢</span></span>
+        </div>
+      </div>
+      <div class="content">
+
+        <div class="view active" id="view-home">
+          <div class="section-title">
+            <span>All Projects</span>
+            <button class="btn" onclick="openNewProjectForm()">＋ New Project</button>
+          </div>
+          <div class="summary-row" id="home-summary"></div>
+          <div class="grid grid-projects" id="projects-grid"></div>
+          <div id="new-project-form" class="card" style="display:none;max-width:560px;margin-top:1.25rem">
+            <div class="section-title">Create New Project</div>
+            <div class="form-grid">
+              <div class="form-group"><label>Project Name</label><input class="input-cell" id="np-name" /></div>
+              <div class="form-group"><label>Project Code</label><input class="input-cell" id="np-code" /></div>
+              <div class="form-group"><label>Manager</label><input class="input-cell" id="np-manager" /></div>
+              <div class="form-group"><label>Client</label><input class="input-cell" id="np-client" /></div>
+              <div class="form-group"><label>Selling / Contract</label><input type="number" class="input-cell" id="np-selling" min="0" step="100" /></div>
+              <div class="form-group"><label>Selling currency</label>
+                <select class="input-cell" id="np-sell-cur">
+                  <option value="CHF">🇨🇭 CHF</option>
+                  <option value="USD" selected>🇺🇸 USD</option>
+                  <option value="EUR">🇪🇺 EUR</option>
+                  <option value="EGP">🇪🇬 EGP</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Start Date</label><input type="date" class="input-cell" id="np-start" /></div>
+              <div class="form-group"><label>End Date</label><input type="date" class="input-cell" id="np-end" /></div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-success" onclick="createProject()">💾 Create</button>
+              <button class="btn btn-ghost" onclick="closeNewProjectForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="view-dashboard">
+          <div class="grid grid-kpi">
+            <div class="card kpi kpi-sell"><div class="card-title">Selling Price</div><div class="kpi-value" id="kpi-selling">$0</div><div class="kpi-label">Contract value</div></div>
+            <div class="card kpi kpi-budget"><div class="card-title">Estimated Cost</div><div class="kpi-value" id="kpi-budget">$0</div><div class="kpi-label">Planned</div></div>
+            <div class="card kpi kpi-actual"><div class="card-title">Actual Cost</div><div class="kpi-value" id="kpi-actual">$0</div><div class="kpi-label">Spent</div></div>
+            <div class="card kpi kpi-profit"><div class="card-title">Profit</div><div class="kpi-value" id="kpi-profit">$0</div><div class="kpi-label" id="kpi-profit-sub">Selling − Cost</div></div>
+            <div class="card kpi kpi-margin"><div class="card-title">Profit Margin</div><div class="kpi-value" id="kpi-margin">0%</div><div class="kpi-label">Auto</div></div>
+            <div class="card kpi kpi-status"><div class="card-title">Cost Status</div><div id="kpi-status" class="status-badge status-ontrack">🟢 ON TRACK</div><div class="kpi-label" id="kpi-variance" style="margin-top:0.3rem">—</div></div>
+          </div>
+          <div class="grid grid-2" style="margin-bottom:1.1rem">
+            <div class="card">
+              <div class="card-title">Selling vs Cost vs Time</div>
+              <div style="margin-bottom:0.7rem"><div class="progress-label"><span>Cost / Selling</span><span id="lbl-cost-of-sell">0%</span></div><div class="progress-bar"><div class="progress-fill fill-blue" id="bar-cost-of-sell" style="width:0%"></div></div></div>
+              <div style="margin-bottom:0.7rem"><div class="progress-label"><span>Margin</span><span id="lbl-margin-bar">0%</span></div><div class="progress-bar"><div class="progress-fill fill-green" id="bar-margin" style="width:0%"></div></div></div>
+              <div style="margin-bottom:0.7rem"><div class="progress-label"><span>Time</span><span id="lbl-time">0%</span></div><div class="progress-bar"><div class="progress-fill fill-purple" id="bar-time" style="width:0%"></div></div><div class="kpi-label" id="lbl-days">—</div></div>
+              <div id="progress-insight" style="font-size:0.8rem;color:var(--text-muted);padding:0.6rem;background:var(--surface2);border-radius:8px;">—</div>
+              <div class="chart-box" style="height:150px"><canvas id="chartProgress"></canvas></div>
+            </div>
+            <div class="card"><div class="card-title">Budget by Category</div><div class="chart-box"><canvas id="chartBudget"></canvas></div></div>
+          </div>
+          <div class="section-title" style="margin-bottom:0.75rem">
+            <span>Items — Cost · Mfg · Shipping · Schedule</span>
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              <div class="items-view-toggle">
+                <button class="btn btn-sm btn-ghost active" id="btn-view-cards" onclick="setItemsView('cards')">🔲 Cards</button>
+                <button class="btn btn-sm btn-ghost" id="btn-view-table" onclick="setItemsView('table')">📋 Table</button>
+              </div>
+              <button class="btn btn-sm btn-ghost" onclick="showView('budget')">Edit</button>
+            </div>
+          </div>
+
+          <div class="item-blocks" id="item-blocks-grid" style="margin-bottom:1.1rem"></div>
+
+          <div class="card" id="items-table-card" style="display:none;margin-bottom:1.1rem">
+            <div class="table-wrap" style="max-height:360px;overflow-y:auto">
+              <table>
+                <thead><tr>
+                  <th>Category</th><th class="num">Est. Cost</th><th class="num">Act. Cost</th><th class="num">Cost %</th>
+                  <th class="num">Mfg Est</th><th class="num">Mfg Act</th>
+                  <th>Ship Type</th><th class="num">Ship Est</th><th class="num">Ship Act</th>
+                  <th class="num">Sched Est</th><th class="num">Sched Act</th><th>Status</th>
+                </tr></thead>
+                <tbody id="band-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title"><span>Recent Costs</span><button class="btn btn-sm" onclick="showView('costs')">＋ Add</button></div>
+            <div class="table-wrap" style="max-height:180px;overflow-y:auto">
+              <table><thead><tr><th>Date</th><th>Category</th><th class="num">Amount</th></tr></thead><tbody id="recent-cost-tbody"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="view-project">
+          <div class="card" style="max-width:640px">
+            <div class="section-title">📁 Project Information</div>
+            <div class="form-grid">
+              <div class="form-group"><label>Name</label><input class="input-cell" id="f-name" /></div>
+              <div class="form-group"><label>Code</label><input class="input-cell" id="f-code" /></div>
+              <div class="form-group"><label>Manager</label><input class="input-cell" id="f-manager" /></div>
+              <div class="form-group"><label>Client</label><input class="input-cell" id="f-client" /></div>
+              <div class="form-group"><label>Selling / Contract</label><input type="number" class="input-cell" id="f-selling" min="0" step="100" /></div>
+              <div class="form-group"><label>Selling currency</label>
+                <select class="input-cell" id="f-sell-cur">
+                  <option value="CHF">🇨🇭 CHF</option>
+                  <option value="USD">🇺🇸 USD</option>
+                  <option value="EUR">🇪🇺 EUR</option>
+                  <option value="EGP">🇪🇬 EGP</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Start</label><input type="date" class="input-cell" id="f-start" /></div>
+              <div class="form-group"><label>End</label><input type="date" class="input-cell" id="f-end" /></div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-success" onclick="saveProjectInfo()">💾 Save</button>
+              <button class="btn btn-ghost" onclick="showView('dashboard')">Dashboard</button>
+              <button class="btn btn-danger" onclick="deleteCurrentProject()">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="view-budget">
+          <div class="card">
+            <div class="section-title"><span>💰 Estimated plan (cost · mfg · shipping · schedule)</span><span class="badge">Total: <strong id="budget-total-label">$0</strong></span></div>
+            <div class="add-box">
+              <div style="font-weight:600;margin-bottom:0.65rem;font-size:0.88rem">＋ Add category</div>
+              <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+                <div class="form-group"><label>Name</label><input class="input-cell" id="new-cat-name" /></div>
+                <div class="form-group"><label>Est. amount</label><input type="number" class="input-cell" id="new-cat-amount" min="0" step="100" /></div>
+                <div class="form-group"><label>Currency</label>
+                  <select class="input-cell" id="new-cat-cur">
+                    <option value="CHF">🇨🇭 CHF</option>
+                    <option value="USD" selected>🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="EGP">🇪🇬 EGP</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Mfg Est. days</label><input type="number" class="input-cell" id="new-cat-mfg" min="0" value="0" /></div>
+                <div class="form-group"><label>Shipping type</label>
+                  <select class="input-cell" id="new-cat-ship">
+                    <option value="">—</option>
+                    <option value="express">⚡ Express (2 weeks)</option>
+                    <option value="flight">✈️ Flight (1.5 months)</option>
+                    <option value="sea">🚢 Sea (2–3 months)</option>
+                    <option value="local">🚚 Local (2 weeks)</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Est. Start</label><input type="date" class="input-cell" id="new-cat-est-start" /></div>
+                <div class="form-group"><label>Est. End</label><input type="date" class="input-cell" id="new-cat-est-end" /></div>
+              </div>
+              <button class="btn btn-accent btn-sm" style="margin-top:0.45rem" onclick="addCategory()">＋ Add</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>#</th><th>Category</th><th class="num">Est.</th><th>Cur</th>
+                  <th class="num">Mfg Est</th><th class="num">Mfg Act</th>
+                  <th>Ship Type</th><th class="num">Ship Est</th><th class="num">Ship Act</th>
+                  <th>Est. Start</th><th>Est. End</th><th class="num">Est.d</th>
+                  <th>Act. Start</th><th>Act. End</th><th class="num">Act.d</th><th></th>
+                </tr></thead>
+                <tbody id="budget-edit-tbody"></tbody>
+              </table>
+            </div>
+            <div class="actions">
+              <button class="btn btn-success" onclick="saveBudget()">💾 Save</button>
+              <button class="btn btn-ghost" onclick="showView('dashboard')">Dashboard</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="view-costs">
+          <div class="grid grid-2" style="align-items:start">
+            <div class="card">
+              <div class="section-title">＋ Add Actual Cost</div>
+              <p class="hint" style="margin-bottom:0.9rem">Use this when the item/cost is <strong>already received</strong> (later in time). Select the same category from estimated plan.</p>
+              <div class="form-grid" style="grid-template-columns:1fr">
+                <div class="form-group"><label>Date received / invoice</label><input type="date" class="input-cell" id="c-date" /></div>
+                <div class="form-group">
+                  <label>Category (from estimated plan)</label>
+                  <select class="input-cell" id="c-category" onchange="onCostCategoryChange()"></select>
+                </div>
+                <div id="c-cat-preview" class="hint" style="display:none;padding:0.65rem;background:var(--surface2);border-radius:8px;margin-bottom:0.5rem;line-height:1.6"></div>
+                <div class="form-group"><label>Or type a new category</label><input class="input-cell" id="c-category-new" placeholder="Only if not in estimated list" oninput="onNewCatInput()" /></div>
+                <div class="form-group"><label>Description</label><input class="input-cell" id="c-desc" /></div>
+                <div class="form-group"><label>Vendor</label><input class="input-cell" id="c-vendor" /></div>
+                <div class="form-group"><label>Actual amount</label><input type="number" class="input-cell" id="c-amount" min="0" step="0.01" /></div>
+                <div class="form-group"><label>Currency</label>
+                  <select class="input-cell" id="c-currency">
+                    <option value="CHF">🇨🇭 CHF</option>
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="EGP">🇪🇬 EGP</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid var(--border)">
+                <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.65rem">⏱ Actual time (optional — fill when item arrived)</div>
+                <div class="form-grid">
+                  <div class="form-group"><label>Actual Mfg days</label><input type="number" class="input-cell" id="c-mfg-act" min="0" placeholder="e.g. 28" /></div>
+                  <div class="form-group"><label>Actual Ship days</label><input type="number" class="input-cell" id="c-ship-act" min="0" placeholder="e.g. 40" /></div>
+                  <div class="form-group"><label>Actual start (work)</label><input type="date" class="input-cell" id="c-act-start" /></div>
+                  <div class="form-group"><label>Actual end / received</label><input type="date" class="input-cell" id="c-act-end" /></div>
+                </div>
+                <p class="hint">These update the category’s actual times on the dashboard (estimated stays as the original plan).</p>
+              </div>
+              <div class="actions"><button class="btn btn-success" onclick="addCost()">💾 Save actual</button></div>
+            </div>
+            <div class="card">
+              <div class="section-title"><span>Cost Log</span><span class="badge">Total: <strong id="cost-total-label">$0</strong></span></div>
+              <div class="table-wrap" style="max-height:480px;overflow-y:auto">
+                <table><thead><tr><th>Date</th><th>Category</th><th>Desc</th><th class="num">Amount</th><th></th></tr></thead><tbody id="cost-tbody"></tbody></table>
+              </div>
+            </div>
+          </div>
+          <div class="actions" style="margin-top:0.9rem"><button class="btn btn-ghost" onclick="showView('dashboard')">Dashboard</button></div>
+        </div>
+
+        <div class="view" id="view-alarms">
+          <div class="card" style="max-width:520px">
+            <div class="section-title">🔔 Alarms</div>
+            <div class="threshold-row"><span class="dot dot-green"></span><label>Cost On Track below</label><input type="number" class="input-cell" id="th-warning" value="80" /><span>%</span></div>
+            <div class="threshold-row"><span class="dot dot-yellow"></span><label>Warning ≥</label><span id="lbl-th-warn">80%</span></div>
+            <div class="threshold-row"><span class="dot dot-orange"></span><label>Critical ≥</label><input type="number" class="input-cell" id="th-critical" value="95" /><span>%</span></div>
+            <div class="threshold-row"><span class="dot dot-green"></span><label>Min Profit Margin</label><input type="number" class="input-cell" id="th-margin" value="15" /><span>%</span></div>
+            <div class="actions"><button class="btn btn-success" onclick="saveAlarms()">💾 Save</button><button class="btn btn-ghost" onclick="showView('dashboard')">Dashboard</button></div>
+          </div>
+        </div>
+
+        <div class="view" id="view-currency">
+          <div class="card" style="max-width:640px;margin-bottom:1.1rem">
+            <div class="section-title">💱 Exchange rates (to base currency)</div>
+            <p class="hint" style="margin-bottom:1rem">Set how many <strong id="fx-base-label">USD</strong> = 1 unit of each currency. Used to convert costs & selling for profit and risk.</p>
+            <div class="form-group" style="margin-bottom:1rem;max-width:200px">
+              <label>Project base currency</label>
+              <select class="input-cell" id="fx-base" onchange="onBaseCurrencyChange()">
+                <option value="CHF">🇨🇭 CHF – Swiss Franc</option>
+                <option value="USD">🇺🇸 USD – US Dollar</option>
+                <option value="EUR">🇪🇺 EUR – Euro</option>
+                <option value="EGP">🇪🇬 EGP – Egyptian Pound</option>
+              </select>
+            </div>
+            <div class="fx-row"><label></label><span class="hint">Rate → base</span><span class="hint">Risk ±%</span></div>
+            <div class="fx-row">
+              <label class="cur-badge cur-CHF">CHF</label>
+              <input type="number" class="input-cell" id="fx-CHF" min="0" step="0.0001" />
+              <input type="number" class="input-cell" id="fx-risk-CHF" min="0" step="0.5" value="3" title="Assumed rate move %" />
+            </div>
+            <div class="fx-row">
+              <label class="cur-badge cur-USD">USD</label>
+              <input type="number" class="input-cell" id="fx-USD" min="0" step="0.0001" />
+              <input type="number" class="input-cell" id="fx-risk-USD" min="0" step="0.5" value="3" />
+            </div>
+            <div class="fx-row">
+              <label class="cur-badge cur-EUR">EUR</label>
+              <input type="number" class="input-cell" id="fx-EUR" min="0" step="0.0001" />
+              <input type="number" class="input-cell" id="fx-risk-EUR" min="0" step="0.5" value="3" />
+            </div>
+            <div class="fx-row">
+              <label class="cur-badge cur-EGP">EGP</label>
+              <input type="number" class="input-cell" id="fx-EGP" min="0" step="0.0001" />
+              <input type="number" class="input-cell" id="fx-risk-EGP" min="0" step="0.5" value="5" />
+            </div>
+            <p class="hint">Example: base USD, CHF rate 1.12 means 1 CHF = 1.12 USD. Risk % = assumed adverse move for exposure.</p>
+            <div class="actions">
+              <button class="btn btn-success" onclick="saveCurrency()">💾 Save rates</button>
+              <button class="btn btn-ghost" onclick="showView('dashboard')">Dashboard</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title">Currency exposure & risk</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Currency</th>
+                    <th class="num">Selling (orig)</th>
+                    <th class="num">Actual cost (orig)</th>
+                    <th class="num">Net exposure</th>
+                    <th class="num">In base</th>
+                    <th class="num">Risk impact</th>
+                  </tr>
+                </thead>
+                <tbody id="fx-risk-tbody"></tbody>
+              </table>
+            </div>
+            <p class="hint" id="fx-risk-note" style="margin-top:0.8rem">—</p>
+          </div>
+        </div>
+
+        <div class="view" id="view-export">
+          <div class="card" style="max-width:600px">
+            <div class="section-title">💾 JSON Save / Load</div>
+            <p class="hint" style="margin-bottom:1.1rem">Backup or restore all projects (local file only).</p>
+            <div style="margin-bottom:1.3rem"><button class="btn btn-success" onclick="exportJSON()">⬇ Download JSON</button></div>
+            <hr class="divider" />
+            <div class="file-row">
+              <input type="file" id="import-file" accept=".json,application/json" />
+              <button class="btn btn-accent" onclick="importJSON()">⬆ Load JSON</button>
+            </div>
+            <div class="actions" style="margin-top:1.3rem"><button class="btn btn-ghost" onclick="showView('home')">All Projects</button></div>
+          </div>
+        </div>
+
+        <div class="view" id="view-help">
+          <div class="card" style="max-width:680px">
+            <div class="section-title">❓ Help</div>
+            <ol style="padding-left:1.2rem;line-height:1.85;font-size:0.92rem">
+              <li><strong>Step 1 – Estimated (plan):</strong> In Budget + Time set planned cost, mfg days, shipping type, and schedule dates.</li>
+              <li><strong>Step 2 – Actual (later):</strong> When the item arrives / invoice comes, open Actual Costs, select the same category, enter real amount and actual mfg/ship days.</li>
+              <li>Estimated values stay as the original plan. Actual values are filled at another time when you receive the item.</li>
+              <li>Shipping: ⚡ Express 2w · ✈️ Flight 1.5m · 🚢 Sea 2–3m · 🚚 Local 2w.</li>
+              <li><strong>Currency risk:</strong> CHF · USD · EUR · EGP — set rates & risk % under Currency Risk. Costs/selling convert to base for profit.</li>
+              <li>Data is saved in this browser. Use JSON export for backup.</li>
+            </ol>
+            <div class="actions"><button class="btn" onclick="showView('home')">All Projects</button></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 
   <script>
-    // Each band: estimated time (estStart, estEnd) + actual time (actStart, actEnd)
-    const DEFAULT_BUDGET = [
-      { id: 1, name: "Main Distribution Board", estimated: 45000, estStart: "2026-01-15", estEnd: "2026-02-28", actStart: "2026-01-18", actEnd: "2026-02-25" },
-      { id: 2, name: "Cables & Wiring", estimated: 32000, estStart: "2026-02-01", estEnd: "2026-04-15", actStart: "2026-02-05", actEnd: "" },
-      { id: 3, name: "Lighting System", estimated: 18500, estStart: "2026-03-01", estEnd: "2026-05-15", actStart: "2026-03-10", actEnd: "" },
-      { id: 4, name: "Power Outlets & Sockets", estimated: 8500, estStart: "2026-03-15", estEnd: "2026-05-30", actStart: "", actEnd: "" },
-      { id: 5, name: "Earthing & Lightning Protection", estimated: 12000, estStart: "2026-02-15", estEnd: "2026-04-01", actStart: "2026-02-20", actEnd: "2026-04-05" },
-      { id: 6, name: "Fire Alarm System", estimated: 15000, estStart: "2026-04-01", estEnd: "2026-06-15", actStart: "2026-04-12", actEnd: "" },
-      { id: 7, name: "HVAC Electrical", estimated: 22000, estStart: "2026-03-01", estEnd: "2026-06-30", actStart: "", actEnd: "" },
-      { id: 8, name: "UPS & Backup Power", estimated: 28000, estStart: "2026-05-01", estEnd: "2026-07-15", actStart: "", actEnd: "" },
-      { id: 9, name: "Cable Trays & Conduits", estimated: 14500, estStart: "2026-01-20", estEnd: "2026-03-31", actStart: "2026-01-22", actEnd: "2026-03-28" },
-      { id: 10, name: "Testing & Commissioning", estimated: 7500, estStart: "2026-07-01", estEnd: "2026-08-20", actStart: "", actEnd: "" },
-      { id: 11, name: "Labor - Electrical Works", estimated: 55000, estStart: "2026-01-15", estEnd: "2026-08-15", actStart: "2026-01-15", actEnd: "" },
-      { id: 12, name: "Contingency (10%)", estimated: 25850, estStart: "2026-01-15", estEnd: "2026-08-30", actStart: "", actEnd: "" },
-    ];
-    const DEFAULT_COSTS = [
-      { id: 1, date: "2026-01-20", category: "Main Distribution Board", desc: "MDB Panel – INV-1001", vendor: "ABB", amount: 18500 },
-      { id: 2, date: "2026-02-05", category: "Cables & Wiring", desc: "Power cables 3x185mm²", vendor: "CableCo", amount: 12500 },
-      { id: 3, date: "2026-02-18", category: "Labor - Electrical Works", desc: "Crew Week 1–4", vendor: "ElectroTech", amount: 14000 },
-      { id: 4, date: "2026-03-02", category: "Cable Trays & Conduits", desc: "Galvanized trays", vendor: "TrayMaster", amount: 6800 },
-      { id: 5, date: "2026-03-15", category: "Lighting System", desc: "LED panels", vendor: "Philips", amount: 9200 },
-      { id: 6, date: "2026-04-01", category: "Earthing & Lightning Protection", desc: "Earth + LPS", vendor: "GroundSafe", amount: 7500 },
-      { id: 7, date: "2026-04-20", category: "Labor - Electrical Works", desc: "Crew Week 5–10", vendor: "ElectroTech", amount: 16500 },
-      { id: 8, date: "2026-05-10", category: "Fire Alarm System", desc: "Addressable Phase 1", vendor: "FireProtect", amount: 8900 },
+    const USERS = [
+      { username: 'manager', password: '1234', name: 'Project Manager' },
+      { username: 'admin', password: 'admin', name: 'Admin' },
     ];
 
-    let state = {
-      project: {
-        name: "Electrical Installation – Building A",
-        code: "EL-2026-001",
-        manager: "Project Manager",
-        client: "",
-        start: "2026-01-15",
-        end: "2026-08-30",
-      },
-      budget: structuredClone(DEFAULT_BUDGET),
-      costs: structuredClone(DEFAULT_COSTS),
-      thresholds: { warning: 80, critical: 95 },
+    const SHIP_TYPES = {
+      express: { label: 'Express', days: 14, icon: '⚡' },
+      flight:  { label: 'Flight',  days: 45, icon: '✈️' },
+      sea:     { label: 'Sea',     days: 75, icon: '🚢' },
+      local:   { label: 'Local',   days: 14, icon: '🚚' },
     };
+    function shipEstFromType(t) { return (SHIP_TYPES[t] && SHIP_TYPES[t].days) || 0; }
+    function shipTypeLabel(t) {
+      const s = SHIP_TYPES[t];
+      if (!s) return t || '—';
+      return s.icon + ' ' + s.label;
+    }
+    function shipTypeOption(t, selected) {
+      const s = SHIP_TYPES[t];
+      if (!s) return '';
+      return '<option value="' + t + '"' + (selected ? ' selected' : '') + '>' + s.icon + ' ' + s.label + '</option>';
+    }
 
-    let chartProgress = null;
-    let chartBudget = null;
-    let nextBudgetId = 100;
-    let nextCostId = 100;
+    const CURRENCIES = ['CHF', 'USD', 'EUR', 'EGP'];
+    const CUR_FLAGS = { CHF: '🇨🇭', USD: '🇺🇸', EUR: '🇪🇺', EGP: '🇪🇬' };
+    // Default rates ≈ to USD (user can change). 1 unit foreign = X base when base=USD
+    const DEFAULT_RATES = { CHF: 1.12, USD: 1, EUR: 1.08, EGP: 0.020 };
+    const DEFAULT_RISK = { CHF: 3, USD: 2, EUR: 3, EGP: 5 };
+
+    function getFx(p) {
+      const fx = p.fx || {};
+      const base = fx.base || 'USD';
+      const rates = { ...DEFAULT_RATES, ...(fx.rates || {}) };
+      const risk = { ...DEFAULT_RISK, ...(fx.risk || {}) };
+      // rate always means: 1 CUR = rates[CUR] units of BASE
+      rates[base] = 1;
+      return { base, rates, risk };
+    }
+    function toBase(amount, currency, fx) {
+      const cur = currency || fx.base;
+      const r = fx.rates[cur];
+      if (r == null || r === 0) return Number(amount) || 0;
+      return (Number(amount) || 0) * r;
+    }
+    function fmtCur(n, cur) {
+      try {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: cur || 'USD', maximumFractionDigits: 0 }).format(n || 0);
+      } catch (e) {
+        return (cur || '') + ' ' + Math.round(n || 0).toLocaleString();
+      }
+    }
+
+    function shipBadgeHtml(t) {
+      if (!t || !SHIP_TYPES[t]) return '<span class="ship-badge ship-none">—</span>';
+      const s = SHIP_TYPES[t];
+      return '<span class="ship-badge ship-' + t + '">' + s.icon + ' ' + s.label + '</span>';
+    }
+
+    function emptyItem(id, name, start, end, currency) {
+      return {
+        id, name, estimated: 0, currency: currency || 'USD',
+        estStart: start || '', estEnd: end || '', actStart: '', actEnd: '',
+        mfgEstDays: 0, mfgActDays: 0,
+        shippingType: '', shipEstDays: 0, shipActDays: 0,
+      };
+    }
+
+    function sampleProjects() {
+      return [
+        {
+          id: 'p1',
+          info: { name: 'Electrical Installation – Building A', code: 'EL-2026-001', manager: 'Project Manager', client: 'Owner Co.', selling: 280000, start: '2026-01-15', end: '2026-08-30' },
+          budget: [
+            { id: 1, name: 'Main Distribution Board', estimated: 45000, estStart: '2026-01-15', estEnd: '2026-02-28', actStart: '2026-01-18', actEnd: '2026-02-25', mfgEstDays: 30, mfgActDays: 28, shippingType: 'sea', shipEstDays: 75, shipActDays: 80 },
+            { id: 2, name: 'Cables & Wiring', estimated: 32000, estStart: '2026-02-01', estEnd: '2026-04-15', actStart: '2026-02-05', actEnd: '', mfgEstDays: 21, mfgActDays: 25, shippingType: 'flight', shipEstDays: 45, shipActDays: 40 },
+            { id: 3, name: 'Lighting System', estimated: 18500, estStart: '2026-03-01', estEnd: '2026-05-15', actStart: '2026-03-10', actEnd: '', mfgEstDays: 14, mfgActDays: 12, shippingType: 'express', shipEstDays: 14, shipActDays: 12 },
+            { id: 4, name: 'Labor - Electrical Works', estimated: 55000, estStart: '2026-01-15', estEnd: '2026-08-15', actStart: '2026-01-15', actEnd: '', mfgEstDays: 0, mfgActDays: 0, shippingType: 'local', shipEstDays: 14, shipActDays: 0 },
+            { id: 5, name: 'Contingency (10%)', estimated: 15000, estStart: '2026-01-15', estEnd: '2026-08-30', actStart: '', actEnd: '', mfgEstDays: 0, mfgActDays: 0, shippingType: '', shipEstDays: 0, shipActDays: 0 },
+          ],
+          costs: [
+            { id: 1, date: '2026-01-20', category: 'Main Distribution Board', desc: 'MDB Panel', vendor: 'ABB', amount: 18500 },
+            { id: 2, date: '2026-02-05', category: 'Cables & Wiring', desc: 'Power cables', vendor: 'CableCo', amount: 12500 },
+            { id: 3, date: '2026-02-18', category: 'Labor - Electrical Works', desc: 'Crew W1-4', vendor: 'ElectroTech', amount: 14000 },
+            { id: 4, date: '2026-03-15', category: 'Lighting System', desc: 'LED panels', vendor: 'Philips', amount: 9200 },
+            { id: 5, date: '2026-04-20', category: 'Labor - Electrical Works', desc: 'Crew W5-10', vendor: 'ElectroTech', amount: 16500 },
+          ],
+          thresholds: { warning: 80, critical: 95, minMargin: 15 },
+        },
+        {
+          id: 'p2',
+          info: { name: 'Substation Upgrade – Plant B', code: 'EL-2026-002', manager: 'Project Manager', client: 'Industrial Ltd', selling: 350000, start: '2026-03-01', end: '2026-09-30' },
+          budget: [
+            { id: 1, name: 'Switchgear', estimated: 80000, estStart: '2026-03-01', estEnd: '2026-05-15', actStart: '2026-03-05', actEnd: '', mfgEstDays: 45, mfgActDays: 50, shippingType: 'sea', shipEstDays: 75, shipActDays: 0 },
+            { id: 2, name: 'Transformers', estimated: 120000, estStart: '2026-04-01', estEnd: '2026-07-01', actStart: '', actEnd: '', mfgEstDays: 60, mfgActDays: 0, shippingType: 'sea', shipEstDays: 75, shipActDays: 0 },
+            { id: 3, name: 'Cabling', estimated: 45000, estStart: '2026-05-01', estEnd: '2026-08-15', actStart: '', actEnd: '', mfgEstDays: 20, mfgActDays: 0, shippingType: 'flight', shipEstDays: 45, shipActDays: 0 },
+            { id: 4, name: 'Labor', estimated: 60000, estStart: '2026-03-01', estEnd: '2026-09-15', actStart: '2026-03-01', actEnd: '', mfgEstDays: 0, mfgActDays: 0, shippingType: 'local', shipEstDays: 14, shipActDays: 0 },
+          ],
+          costs: [
+            { id: 1, date: '2026-03-10', category: 'Switchgear', desc: 'Deposit', vendor: 'Siemens', amount: 40000 },
+            { id: 2, date: '2026-04-01', category: 'Labor', desc: 'Mobilization', vendor: 'Local Crew', amount: 12000 },
+          ],
+          thresholds: { warning: 80, critical: 95, minMargin: 15 },
+        },
+      ];
+    }
+
+    let store = { projects: sampleProjects(), currentProjectId: null, user: null };
+    let chartProgress = null, chartBudget = null;
+    let nextBudgetId = 100, nextCostId = 100, nextProjectId = 10;
 
     const VIEW_TITLES = {
-      dashboard: "Dashboard",
-      project: "Project Info",
-      budget: "Budget + Time",
-      costs: "Actual Costs",
-      alarms: "Alarm Thresholds",
-      export: "JSON Save / Load",
-      help: "How to Use",
+      home: 'All Projects', dashboard: 'Dashboard', project: 'Project Info',
+      budget: 'Budget + Time', costs: 'Actual (when received)', alarms: 'Alarms', currency: 'Currency Risk', export: 'JSON Save / Load', help: 'Help',
     };
 
-    function loadState() {
+    function loadStore() {
       try {
-        const raw = localStorage.getItem("elec_cost_dashboard_v5");
+        const raw = localStorage.getItem('elec_cost_v3');
         if (raw) {
           const saved = JSON.parse(raw);
-          state = { ...state, ...saved };
-          state.budget.forEach(b => {
-            // migrate old fields
-            if (b.start && !b.estStart) b.estStart = b.start;
-            if (b.end && !b.estEnd) b.estEnd = b.end;
-            if (!b.estStart) b.estStart = state.project.start || "";
-            if (!b.estEnd) b.estEnd = state.project.end || "";
-            if (b.actStart === undefined) b.actStart = "";
-            if (b.actEnd === undefined) b.actEnd = "";
-          });
-          if (state.budget.length) nextBudgetId = Math.max(...state.budget.map(b => b.id || 0)) + 1;
-          if (state.costs.length) nextCostId = Math.max(...state.costs.map(c => c.id || 0)) + 1;
+          if (saved.projects) {
+            store.projects = saved.projects.map(p => ({
+              ...p,
+              info: { selling: 0, sellingCurrency: 'USD', ...p.info },
+              thresholds: { minMargin: 15, warning: 80, critical: 95, ...p.thresholds },
+              fx: {
+                base: (p.fx && p.fx.base) || 'USD',
+                rates: { ...DEFAULT_RATES, ...((p.fx && p.fx.rates) || {}) },
+                risk: { ...DEFAULT_RISK, ...((p.fx && p.fx.risk) || {}) },
+              },
+              budget: (p.budget || []).map(b => ({
+                mfgEstDays: 0, mfgActDays: 0, shippingType: '', shipEstDays: 0, shipActDays: 0, currency: 'USD', ...b,
+              })),
+              costs: (p.costs || []).map(c => ({ currency: 'USD', ...c })),
+            }));
+          }
+          if (saved.currentProjectId) store.currentProjectId = saved.currentProjectId;
         }
       } catch (e) {}
     }
-    function saveState() {
-      localStorage.setItem("elec_cost_dashboard_v5", JSON.stringify(state));
+    function saveStore() {
+      localStorage.setItem('elec_cost_v3', JSON.stringify({
+        projects: store.projects,
+        currentProjectId: store.currentProjectId,
+      }));
     }
 
-    function fmt(n) {
-      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n || 0);
-    }
-    function fmtPct(n) { return (n * 100).toFixed(1) + "%"; }
-    function parseDate(s) {
-      if (!s) return null;
-      const d = new Date(s + "T00:00:00");
-      return isNaN(d) ? null : d;
-    }
-    function daysBetween(a, b) {
-      return Math.round((b - a) / (1000 * 60 * 60 * 24));
-    }
+    function currentProject() { return store.projects.find(p => p.id === store.currentProjectId) || null; }
+    function fmt(n) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n || 0); }
+    function fmtPct(n) { return (n * 100).toFixed(1) + '%'; }
+    function parseDate(s) { if (!s) return null; const d = new Date(s + 'T00:00:00'); return isNaN(d) ? null : d; }
+    function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
     function formatDisplayDate(iso) {
-      if (!iso) return "—";
-      const d = parseDate(iso);
+      if (!iso) return '—';
+      const d = parseDate(String(iso).slice(0, 10));
       if (!d) return iso;
-      return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     }
-    function escapeHtml(str) {
-      return String(str ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-    function toast(msg, type = "success") {
-      const el = document.getElementById("toast");
-      el.textContent = msg;
-      el.className = "toast show " + type;
-      setTimeout(() => el.classList.remove("show"), 2800);
+    function escapeHtml(str) { return String(str ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function toast(msg, type = 'success') {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.className = 'toast show ' + type;
+      setTimeout(() => el.classList.remove('show'), 2800);
     }
 
-    /** Estimated days from estStart–estEnd */
     function estDays(b) {
-      const s = parseDate(b.estStart);
-      const e = parseDate(b.estEnd);
+      const s = parseDate(b.estStart), e = parseDate(b.estEnd);
       if (!s || !e || e <= s) return 0;
       return daysBetween(s, e);
     }
-
-    /** Actual days: if actEnd set → actEnd−actStart; else if actStart set → today−actStart; else 0 */
     function actDays(b) {
-      const s = parseDate(b.actStart);
-      if (!s) return 0;
-      const e = parseDate(b.actEnd);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const end = e || today;
-      if (end < s) return 0;
+      const s = parseDate(b.actStart); if (!s) return 0;
+      const e = parseDate(b.actEnd); const today = new Date(); today.setHours(0,0,0,0);
+      const end = e || today; if (end < s) return 0;
       return daysBetween(s, end);
     }
-
-    /** Time status for display */
     function timeStatus(b) {
-      const est = estDays(b);
-      const act = actDays(b);
-      const hasActStart = !!b.actStart;
-      const hasActEnd = !!b.actEnd;
-      const variance = act - est; // positive = took longer
-
-      if (!hasActStart) return { label: "Not started", cls: "time-soon", variance: null };
-      if (hasActEnd) {
-        if (variance > 0) return { label: "Done (late +" + variance + "d)", cls: "time-late", variance };
-        if (variance < 0) return { label: "Done (early " + variance + "d)", cls: "time-done", variance };
-        return { label: "Done (on time)", cls: "time-done", variance: 0 };
+      const est = estDays(b), act = actDays(b);
+      if (!b.actStart) return { label: 'Not started', cls: 'time-soon', variance: null };
+      if (b.actEnd) {
+        const v = act - est;
+        if (v > 0) return { label: 'Done (late +' + v + 'd)', cls: 'time-late', variance: v };
+        if (v < 0) return { label: 'Done (early ' + v + 'd)', cls: 'time-done', variance: v };
+        return { label: 'Done (on time)', cls: 'time-done', variance: 0 };
       }
-      // in progress
-      if (est > 0 && act > est) return { label: "In progress (over +" + (act - est) + "d)", cls: "time-late", variance: act - est };
-      return { label: "In progress", cls: "time-tag", variance: act - est };
+      if (est > 0 && act > est) return { label: 'In progress (over)', cls: 'time-late', variance: act - est };
+      return { label: 'In progress', cls: 'time-tag', variance: act - est };
+    }
+
+    function projectStats(p) {
+      const fx = getFx(p);
+      const totalBudget = (p.budget || []).reduce((s, b) => s + toBase(b.estimated, b.currency || fx.base, fx), 0);
+      const totalActual = (p.costs || []).reduce((s, c) => s + toBase(c.amount, c.currency || fx.base, fx), 0);
+      const sellingRaw = Number(p.info?.selling) || 0;
+      const selling = toBase(sellingRaw, p.info?.sellingCurrency || fx.base, fx);
+      const profit = selling - totalActual;
+      const margin = selling > 0 ? profit / selling : 0;
+      const usedPct = totalBudget > 0 ? totalActual / totalBudget : 0;
+      const th = p.thresholds || { warning: 80, critical: 95, minMargin: 15 };
+      let statusLabel = '🟢 ON TRACK', statusClass = 'status-ontrack', barClass = 'fill-green';
+      if (usedPct >= 1) { statusLabel = '🔴 OVER BUDGET'; statusClass = 'status-over'; barClass = 'fill-red'; }
+      else if (usedPct >= th.critical / 100) { statusLabel = '🟠 CRITICAL'; statusClass = 'status-critical'; barClass = 'fill-orange'; }
+      else if (usedPct >= th.warning / 100) { statusLabel = '🟡 WARNING'; statusClass = 'status-warning'; barClass = 'fill-yellow'; }
+      const marginOk = selling <= 0 || margin * 100 >= (th.minMargin || 0);
+      return { totalBudget, totalActual, remaining: totalBudget - totalActual, selling, profit, margin, usedPct, statusLabel, statusClass, barClass, marginOk, minMargin: th.minMargin || 15, base: fx.base, sellingRaw, sellingCurrency: p.info?.sellingCurrency || fx.base };
+    }
+
+    function doLogin() {
+      const user = document.getElementById('login-user').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      const found = USERS.find(u => u.username === user && u.password === pass);
+      if (!found) { toast('Invalid username or password', 'error'); return; }
+      store.user = found;
+      sessionStorage.setItem('elec_user', JSON.stringify(found));
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').classList.add('show');
+      document.getElementById('user-name').textContent = found.name;
+      document.getElementById('hdr-today').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      showView('home');
+      toast('Welcome, ' + found.name);
+    }
+    function doLogout() {
+      store.user = null; store.currentProjectId = null;
+      sessionStorage.removeItem('elec_user');
+      document.getElementById('app').classList.remove('show');
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('login-pass').value = '';
+    }
+    function checkSession() {
+      try {
+        const raw = sessionStorage.getItem('elec_user');
+        if (!raw) return;
+        store.user = JSON.parse(raw);
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').classList.add('show');
+        document.getElementById('user-name').textContent = store.user.name;
+        document.getElementById('hdr-today').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        showView('home');
+      } catch (e) {}
+    }
+    document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('login-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+
+    function setProjectNavVisible(show) {
+      ['nav-project-section','nav-dashboard','nav-project','nav-budget','nav-costs','nav-alarms','nav-currency'].forEach(id => {
+        document.getElementById(id).style.display = show ? '' : 'none';
+      });
+      document.getElementById('hdr-project-badge').style.display = show ? '' : 'none';
+      document.getElementById('hdr-status-wrap').style.display = show ? '' : 'none';
     }
 
     function showView(name) {
-      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-      const view = document.getElementById("view-" + name);
-      if (view) view.classList.add("active");
+      if (['dashboard','project','budget','costs','alarms','currency'].includes(name) && !currentProject()) {
+        showView('home'); toast('Select a project first', 'error'); return;
+      }
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      const view = document.getElementById('view-' + name);
+      if (view) view.classList.add('active');
       const nav = document.querySelector(`.nav-item[data-view="${name}"]`);
-      if (nav) nav.classList.add("active");
-      document.getElementById("page-title").textContent = VIEW_TITLES[name] || name;
-      if (name === "project") fillProjectForm();
-      if (name === "budget") fillBudgetForm();
-      if (name === "costs") fillCostForm();
-      if (name === "alarms") fillAlarmForm();
-      if (name === "dashboard") updateDashboard();
-      closeSidebar();
-      window.scrollTo(0, 0);
+      if (nav) nav.classList.add('active');
+      document.getElementById('page-title').textContent = VIEW_TITLES[name] || name;
+      if (name === 'home') { setProjectNavVisible(false); renderHome(); }
+      else if (['dashboard','project','budget','costs','alarms','currency'].includes(name)) {
+        setProjectNavVisible(true);
+        const p = currentProject();
+        if (p) {
+          document.getElementById('hdr-code').textContent = p.info.code;
+          document.getElementById('hdr-status').textContent = projectStats(p).statusLabel;
+        }
+      }
+      if (name === 'project') fillProjectForm();
+      if (name === 'budget') fillBudgetForm();
+      if (name === 'costs') fillCostForm();
+      if (name === 'alarms') fillAlarmForm();
+      if (name === 'currency') fillCurrencyForm();
+      if (name === 'dashboard') updateDashboard();
+      closeSidebar(); window.scrollTo(0, 0);
     }
     function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("open");
-      document.getElementById("overlay").classList.toggle("open");
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('open');
     }
     function closeSidebar() {
-      document.getElementById("sidebar").classList.remove("open");
-      document.getElementById("overlay").classList.remove("open");
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    }
+
+    function renderHome() {
+      const grid = document.getElementById('projects-grid');
+      const summary = document.getElementById('home-summary');
+      if (!store.projects.length) {
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1">No projects. Click “New Project”.</div>`;
+        summary.innerHTML = '';
+        return;
+      }
+      let totalSell = 0, totalActual = 0, totalProfit = 0, onTrack = 0, critical = 0, over = 0;
+      store.projects.forEach(p => {
+        const s = projectStats(p);
+        totalSell += s.selling; totalActual += s.totalActual; totalProfit += s.profit;
+        if (s.statusLabel.includes('OVER')) over++;
+        else if (s.statusLabel.includes('CRITICAL')) critical++;
+        else if (s.statusLabel.includes('WARNING')) {}
+        else onTrack++;
+      });
+      const overallMargin = totalSell > 0 ? totalProfit / totalSell : 0;
+      summary.innerHTML = `
+        <div class="summary-stat"><div class="val">${store.projects.length}</div><div class="lbl">Projects</div></div>
+        <div class="summary-stat"><div class="val">${fmt(totalSell)}</div><div class="lbl">Total Selling</div></div>
+        <div class="summary-stat"><div class="val">${fmt(totalActual)}</div><div class="lbl">Total Cost</div></div>
+        <div class="summary-stat"><div class="val ${totalProfit>=0?'profit-pos':'profit-neg'}">${fmt(totalProfit)}</div><div class="lbl">Profit</div></div>
+        <div class="summary-stat"><div class="val">${fmtPct(overallMargin)}</div><div class="lbl">Margin</div></div>
+        <div class="summary-stat"><div class="val" style="color:var(--success)">${onTrack}</div><div class="lbl">On Track</div></div>
+      `;
+      grid.innerHTML = store.projects.map(p => {
+        const s = projectStats(p);
+        const mc = s.profit >= 0 ? 'profit-pos' : 'profit-neg';
+        return `<div class="project-card" onclick="openProject('${p.id}')">
+          <h3>${escapeHtml(p.info.name)}</h3>
+          <div class="code">${escapeHtml(p.info.code)} · ${escapeHtml(p.info.manager||'')}</div>
+          <div><span class="status-badge ${s.statusClass}">${s.statusLabel}</span></div>
+          <div class="progress-wrap" style="margin-top:0.7rem">
+            <div class="progress-label"><span>Budget used</span><span>${fmtPct(s.usedPct)}</span></div>
+            <div class="progress-bar"><div class="progress-fill ${s.barClass}" style="width:${Math.min(100,s.usedPct*100)}%"></div></div>
+          </div>
+          <div class="meta"><span>Sell: <strong>${fmt(s.selling)}</strong></span><span>Cost: <strong>${fmt(s.totalActual)}</strong></span></div>
+          <div class="meta"><span>Profit: <strong class="${mc}">${fmt(s.profit)}</strong></span><span>Margin: <strong class="${mc}">${fmtPct(s.margin)}</strong></span></div>
+        </div>`;
+      }).join('');
+    }
+
+    function openProject(id) {
+      store.currentProjectId = id;
+      const p = currentProject();
+      if (!p) return;
+      if (p.budget.length) nextBudgetId = Math.max(nextBudgetId, Math.max(...p.budget.map(b => b.id || 0)) + 1);
+      if (p.costs.length) nextCostId = Math.max(nextCostId, Math.max(...p.costs.map(c => c.id || 0)) + 1);
+      saveStore();
+      showView('dashboard');
+    }
+
+    function openNewProjectForm() {
+      document.getElementById('new-project-form').style.display = 'block';
+      document.getElementById('np-name').value = '';
+      document.getElementById('np-code').value = '';
+      document.getElementById('np-manager').value = store.user?.name || '';
+      document.getElementById('np-client').value = '';
+      document.getElementById('np-selling').value = '';
+      document.getElementById('np-start').value = '';
+      document.getElementById('np-end').value = '';
+    }
+    function closeNewProjectForm() { document.getElementById('new-project-form').style.display = 'none'; }
+
+    function createProject() {
+      const name = document.getElementById('np-name').value.trim();
+      const code = document.getElementById('np-code').value.trim();
+      if (!name || !code) { toast('Name and code required', 'error'); return; }
+      const start = document.getElementById('np-start').value;
+      const end = document.getElementById('np-end').value;
+      const selling = Number(document.getElementById('np-selling').value) || 0;
+      const sellingCurrency = document.getElementById('np-sell-cur').value || 'USD';
+      const p = {
+        id: 'p' + (nextProjectId++),
+        info: {
+          name, code,
+          manager: document.getElementById('np-manager').value.trim(),
+          client: document.getElementById('np-client').value.trim(),
+          selling, sellingCurrency, start, end,
+        },
+        budget: [
+          emptyItem(nextBudgetId++, 'Main Distribution Board', start, end, sellingCurrency),
+          emptyItem(nextBudgetId++, 'Cables & Wiring', start, end, sellingCurrency),
+          emptyItem(nextBudgetId++, 'Labor', start, end, sellingCurrency),
+        ],
+        costs: [],
+        thresholds: { warning: 80, critical: 95, minMargin: 15 },
+        fx: { base: sellingCurrency, rates: { ...DEFAULT_RATES }, risk: { ...DEFAULT_RISK } },
+      };
+      p.fx.rates[sellingCurrency] = 1;
+      store.projects.push(p);
+      saveStore();
+      closeNewProjectForm();
+      toast('Project created');
+      renderHome();
+    }
+
+    function deleteCurrentProject() {
+      if (!currentProject()) return;
+      if (!confirm('Delete this project?')) return;
+      store.projects = store.projects.filter(p => p.id !== store.currentProjectId);
+      store.currentProjectId = null;
+      saveStore();
+      toast('Deleted');
+      showView('home');
     }
 
     function calc() {
-      const totalBudget = state.budget.reduce((s, b) => s + (Number(b.estimated) || 0), 0);
-      const totalActual = state.costs.reduce((s, c) => s + (Number(c.amount) || 0), 0);
-      const remaining = totalBudget - totalActual;
-      const usedPct = totalBudget > 0 ? totalActual / totalBudget : 0;
-      const start = parseDate(state.project.start);
-      const end = parseDate(state.project.end);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const p = currentProject();
+      if (!p) return null;
+      const s = projectStats(p);
+      const start = parseDate(p.info.start), end = parseDate(p.info.end);
+      const today = new Date(); today.setHours(0,0,0,0);
       let timePct = 0, daysElapsed = 0, daysTotal = 0, daysLeft = 0;
       if (start && end && end > start) {
         daysTotal = daysBetween(start, end);
@@ -838,413 +977,552 @@
         timePct = Math.min(1, daysElapsed / daysTotal);
       }
       const actualByCat = {};
-      state.costs.forEach(c => {
-        actualByCat[c.category] = (actualByCat[c.category] || 0) + (Number(c.amount) || 0);
-      });
-      const w = state.thresholds.warning / 100;
-      const crit = state.thresholds.critical / 100;
-      let statusLabel = "🟢 ON TRACK", statusClass = "status-ontrack", barClass = "fill-green";
-      if (usedPct >= 1) {
-        statusLabel = "🔴 OVER BUDGET"; statusClass = "status-over"; barClass = "fill-red";
-      } else if (usedPct >= crit) {
-        statusLabel = "🟠 CRITICAL"; statusClass = "status-critical"; barClass = "fill-orange";
-      } else if (usedPct >= w) {
-        statusLabel = "🟡 WARNING"; statusClass = "status-warning"; barClass = "fill-yellow";
-      }
-      return { totalBudget, totalActual, remaining, usedPct, timePct, daysElapsed, daysTotal, daysLeft, actualByCat, statusLabel, statusClass, barClass };
+      (p.costs || []).forEach(c => { actualByCat[c.category] = (actualByCat[c.category] || 0) + (Number(c.amount) || 0); });
+      return { ...s, timePct, daysElapsed, daysTotal, daysLeft, actualByCat };
     }
 
     function updateDashboard() {
-      const c = calc();
-      document.getElementById("kpi-budget").textContent = fmt(c.totalBudget);
-      document.getElementById("kpi-actual").textContent = fmt(c.totalActual);
-      document.getElementById("kpi-remain").textContent = fmt(c.remaining);
-      document.getElementById("kpi-used").textContent = fmtPct(c.usedPct);
-      const barUsed = document.getElementById("bar-used");
-      barUsed.style.width = Math.min(100, c.usedPct * 100) + "%";
-      barUsed.className = "progress-fill " + c.barClass;
-      const statusEl = document.getElementById("kpi-status");
-      statusEl.textContent = c.statusLabel;
-      statusEl.className = "status-badge " + c.statusClass;
-      document.getElementById("hdr-status").textContent = c.statusLabel;
-      document.getElementById("kpi-variance").textContent =
-        "Variance: " + fmt(c.remaining) + (c.remaining >= 0 ? " under" : " over");
-      document.getElementById("lbl-time").textContent = fmtPct(c.timePct);
-      document.getElementById("bar-time").style.width = (c.timePct * 100) + "%";
-      document.getElementById("lbl-cost").textContent = fmtPct(c.usedPct);
-      document.getElementById("bar-cost").style.width = Math.min(100, c.usedPct * 100) + "%";
-      document.getElementById("bar-cost").className = "progress-fill " + c.barClass;
-      document.getElementById("lbl-days").textContent =
-        `${c.daysElapsed} days elapsed · ${c.daysLeft} remaining · ${c.daysTotal} planned`;
-      const diff = c.usedPct - c.timePct;
-      let insight = "Cost and time are roughly in sync.";
-      if (Math.abs(diff) < 0.05) insight = "✓ Cost and time progress are aligned.";
-      else if (diff > 0.1) insight = "⚠ Cost is ahead of schedule — spending faster than time.";
-      else if (diff < -0.1) insight = "✓ Cost is behind time progress — good efficiency.";
-      document.getElementById("progress-insight").textContent = insight;
-      document.getElementById("hdr-code").textContent = state.project.code;
-      document.getElementById("hdr-today").textContent = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      const c = calc(); if (!c) return;
+      document.getElementById('kpi-selling').textContent = fmtCur(c.selling, c.base);
+      document.querySelector('.kpi-sell .kpi-label').textContent = 'Contract · ' + c.base + (c.sellingCurrency && c.sellingCurrency !== c.base ? ' (from ' + c.sellingCurrency + ')' : '');
+      document.getElementById('kpi-budget').textContent = fmtCur(c.totalBudget, c.base);
+      document.getElementById('kpi-actual').textContent = fmtCur(c.totalActual, c.base);
+      document.querySelector('.kpi-budget .kpi-label').textContent = 'Planned · ' + c.base;
+      document.querySelector('.kpi-actual .kpi-label').textContent = 'Spent · ' + c.base;
+      const profitEl = document.getElementById('kpi-profit');
+      profitEl.textContent = fmtCur(c.profit, c.base);
+      profitEl.className = 'kpi-value ' + (c.profit >= 0 ? 'profit-pos' : 'profit-neg');
+      document.getElementById('kpi-profit-sub').textContent = c.selling > 0 ? 'Selling − Actual cost' : 'Set selling in Project Info';
+      const marginEl = document.getElementById('kpi-margin');
+      marginEl.textContent = c.selling > 0 ? fmtPct(c.margin) : '—';
+      marginEl.className = 'kpi-value ' + (c.margin >= 0 ? 'profit-pos' : 'profit-neg');
+      const costOfSell = c.selling > 0 ? c.totalActual / c.selling : 0;
+      document.getElementById('lbl-cost-of-sell').textContent = c.selling > 0 ? fmtPct(costOfSell) : '—';
+      document.getElementById('bar-cost-of-sell').style.width = Math.min(100, costOfSell * 100) + '%';
+      document.getElementById('lbl-margin-bar').textContent = c.selling > 0 ? fmtPct(Math.max(0, c.margin)) : '—';
+      document.getElementById('bar-margin').style.width = Math.min(100, Math.max(0, c.margin) * 100) + '%';
+      document.getElementById('bar-margin').className = 'progress-fill ' + (c.margin >= 0.15 ? 'fill-green' : c.margin >= 0.05 ? 'fill-yellow' : 'fill-red');
+      const statusEl = document.getElementById('kpi-status');
+      statusEl.textContent = c.statusLabel; statusEl.className = 'status-badge ' + c.statusClass;
+      document.getElementById('hdr-status').textContent = c.statusLabel;
+      let varText = 'Budget left: ' + fmt(c.remaining);
+      if (c.selling > 0 && !c.marginOk) varText += ' · ⚠ Margin below ' + c.minMargin + '%';
+      document.getElementById('kpi-variance').textContent = varText;
+      document.getElementById('lbl-time').textContent = fmtPct(c.timePct);
+      document.getElementById('bar-time').style.width = (c.timePct * 100) + '%';
+      document.getElementById('lbl-days').textContent = `${c.daysElapsed} elapsed · ${c.daysLeft} left · ${c.daysTotal} planned`;
+      let insight = c.selling <= 0 ? 'Set Selling in Project Info.' : c.margin < 0 ? '⚠ Loss: cost > selling.' : !c.marginOk ? '⚠ Margin below target.' : '✓ Margin healthy (' + fmtPct(c.margin) + ').';
+      document.getElementById('progress-insight').textContent = insight;
 
-      // Band table: cost + est days + act days + variance + periods + status
-      document.getElementById("band-tbody").innerHTML = state.budget.map(b => {
+      const p = currentProject();
+      renderItemBlocks(p, c);
+      document.getElementById('band-tbody').innerHTML = (p.budget || []).map(b => {
         const actual = c.actualByCat[b.name] || 0;
         const costPct = b.estimated > 0 ? actual / b.estimated : 0;
-        const ed = estDays(b);
-        const ad = actDays(b);
-        const st = timeStatus(b);
-        const varText = st.variance === null ? "—" : (st.variance > 0 ? "+" + st.variance : String(st.variance));
-        const varCls = st.variance === null ? "" : (st.variance > 0 ? "var-neg" : (st.variance < 0 ? "var-pos" : ""));
+        const ed = estDays(b), ad = actDays(b), st = timeStatus(b);
+        const mfgEst = Number(b.mfgEstDays) || 0, mfgAct = Number(b.mfgActDays) || 0;
+        const shipEst = Number(b.shipEstDays) || 0, shipAct = Number(b.shipActDays) || 0;
         return `<tr>
           <td>${escapeHtml(b.name)}</td>
-          <td class="num">${fmt(b.estimated)}</td>
-          <td class="num">${fmt(actual)}</td>
-          <td class="num">${fmtPct(costPct)}</td>
-          <td class="num">${ed || "—"}</td>
-          <td class="num">${ad || (b.actStart ? "0" : "—")}</td>
-          <td class="num ${varCls}">${varText}</td>
-          <td style="font-size:0.72rem;white-space:nowrap">${formatDisplayDate(b.estStart)} → ${formatDisplayDate(b.estEnd)}</td>
-          <td style="font-size:0.72rem;white-space:nowrap">${formatDisplayDate(b.actStart)} → ${formatDisplayDate(b.actEnd)}</td>
+          <td class="num">${fmtCur(b.estimated, b.currency||c.base)} </td><td class="num">${fmt(actual)}</td><td class="num">${fmtPct(costPct)}</td>
+          <td class="num">${mfgEst || '—'}</td><td class="num">${mfgAct || '—'}</td>
+          <td>${shipBadgeHtml(b.shippingType)}</td>
+          <td class="num">${shipEst || '—'}</td><td class="num">${shipAct || '—'}</td>
+          <td class="num">${ed || '—'}</td><td class="num">${ad || (b.actStart ? '0' : '—')}</td>
           <td><span class="time-tag ${st.cls}">${st.label}</span></td>
         </tr>`;
-      }).join("");
+      }).join('');
 
-      const recent = [...state.costs].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 8);
-      const recentBody = document.getElementById("recent-cost-tbody");
-      if (!recent.length) recentBody.innerHTML = `<tr><td colspan="3" class="empty">No costs yet</td></tr>`;
-      else recentBody.innerHTML = recent.map(x =>
-        `<tr><td>${formatDisplayDate(x.date)}</td><td>${escapeHtml(x.category)}</td><td class="num">${fmt(x.amount)}</td></tr>`
-      ).join("");
-
+      const recent = [...(p.costs || [])].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 8);
+      const rb = document.getElementById('recent-cost-tbody');
+      if (!recent.length) rb.innerHTML = `<tr><td colspan="3" class="empty">No costs yet</td></tr>`;
+      else rb.innerHTML = recent.map(x => `<tr><td>${formatDisplayDate(x.date)}</td><td>${escapeHtml(x.category)}</td><td class="num">${fmt(x.amount)}</td></tr>`).join('');
       updateCharts(c);
-      saveState();
+      saveStore();
+    }
+
+    function setItemsView(mode) {
+      const cardsBtn = document.getElementById('btn-view-cards');
+      const tableBtn = document.getElementById('btn-view-table');
+      const cardsGrid = document.getElementById('item-blocks-grid');
+      const tableCard = document.getElementById('items-table-card');
+      if (mode === 'table') {
+        cardsGrid.style.display = 'none'; tableCard.style.display = 'block';
+        cardsBtn.classList.remove('active'); tableBtn.classList.add('active');
+      } else {
+        cardsGrid.style.display = 'grid'; tableCard.style.display = 'none';
+        tableBtn.classList.remove('active'); cardsBtn.classList.add('active');
+      }
+    }
+
+    function itemStatus(pct, th) {
+      if (pct >= 1) return { cls: 'st-over', badge: 'status-over', label: '🔴 Over', bar: 'fill-red' };
+      if (pct >= th.critical / 100) return { cls: 'st-critical', badge: 'status-critical', label: '🟠 Critical', bar: 'fill-orange' };
+      if (pct >= th.warning / 100) return { cls: 'st-warning', badge: 'status-warning', label: '🟡 Warning', bar: 'fill-yellow' };
+      return { cls: 'st-ontrack', badge: 'status-ontrack', label: '🟢 On track', bar: 'fill-green' };
+    }
+
+    function renderItemBlocks(p, c) {
+      const grid = document.getElementById('item-blocks-grid');
+      if (!grid) return;
+      const items = p.budget || [];
+      if (!items.length) {
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1">No items yet. Add categories under Budget + Time.</div>`;
+        return;
+      }
+      const th = p.thresholds || { warning: 80, critical: 95 };
+      grid.innerHTML = items.map(b => {
+        const actual = c.actualByCat[b.name] || 0;
+        const estimated = Number(b.estimated) || 0;
+        const pct = estimated > 0 ? actual / estimated : 0;
+        const stat = itemStatus(pct, th);
+        const remaining = estimated - actual;
+        const ed = estDays(b), ad = actDays(b), st = timeStatus(b);
+        const mfgEst = Number(b.mfgEstDays) || 0, mfgAct = Number(b.mfgActDays) || 0;
+        const shipEst = Number(b.shipEstDays) || 0, shipAct = Number(b.shipActDays) || 0;
+        return `
+          <div class="item-block ${stat.cls}">
+            <div class="item-block-head">
+              <h4>${escapeHtml(b.name)}</h4>
+              <span class="status-badge ${stat.badge}" style="font-size:0.66rem;padding:0.22rem 0.55rem;white-space:nowrap">${stat.label}</span>
+            </div>
+            <div class="item-numbers">
+              <div class="item-num"><div class="item-num-label">Estimated</div><div class="item-num-value">${fmtCur(estimated, b.currency)}</div></div>
+              <div class="item-num"><div class="item-num-label">Actual</div><div class="item-num-value">${fmt(actual)}</div></div>
+              <div class="item-num"><div class="item-num-label">Used</div><div class="item-num-value">${estimated > 0 ? fmtPct(pct) : '—'}</div></div>
+              <div class="item-num"><div class="item-num-label">Remaining</div><div class="item-num-value" style="${remaining < 0 ? 'color:var(--danger)' : ''}">${fmt(remaining)}</div></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill ${stat.bar}" style="width:${Math.min(100, pct * 100)}%"></div></div>
+            <div class="item-group-title">Manufacturing (days)</div>
+            <div class="item-numbers">
+              <div class="item-num"><div class="item-num-label">Mfg Est</div><div class="item-num-value">${mfgEst || '—'}</div></div>
+              <div class="item-num"><div class="item-num-label">Mfg Act</div><div class="item-num-value">${mfgAct || '—'}</div></div>
+            </div>
+            <div class="item-group-title">Shipping (days)</div>
+            <div class="item-numbers">
+              <div class="item-num"><div class="item-num-label">Ship Est</div><div class="item-num-value">${shipEst || '—'}</div></div>
+              <div class="item-num"><div class="item-num-label">Ship Act</div><div class="item-num-value">${shipAct || '—'}</div></div>
+            </div>
+            <div class="item-group-title">Schedule (days)</div>
+            <div class="item-numbers">
+              <div class="item-num"><div class="item-num-label">Sched Est</div><div class="item-num-value">${ed || '—'}</div></div>
+              <div class="item-num"><div class="item-num-label">Sched Act</div><div class="item-num-value">${ad || (b.actStart ? '0' : '—')}</div></div>
+            </div>
+            <div class="item-foot">
+              ${shipBadgeHtml(b.shippingType)}
+              <span class="time-tag ${st.cls}">${st.label}</span>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     function updateCharts(c) {
-      const ctx1 = document.getElementById("chartProgress");
-      if (!ctx1) return;
+      const p = currentProject(); if (!p) return;
+      const ctx1 = document.getElementById('chartProgress'); if (!ctx1) return;
       if (chartProgress) chartProgress.destroy();
-      chartProgress = new Chart(ctx1.getContext("2d"), {
-        type: "bar",
+      const costOfSellPct = c.selling > 0 ? Math.min(150, (c.totalActual / c.selling) * 100) : 0;
+      const marginPct = Math.max(0, c.margin * 100);
+      chartProgress = new Chart(ctx1.getContext('2d'), {
+        type: 'bar',
         data: {
-          labels: ["Time Progress", "Cost Progress"],
-          datasets: [{
-            data: [c.timePct * 100, Math.min(150, c.usedPct * 100)],
-            backgroundColor: ["#3b82f6", c.usedPct >= 1 ? "#ef4444" : c.usedPct >= 0.95 ? "#f97316" : c.usedPct >= 0.8 ? "#eab308" : "#22c55e"],
-            borderRadius: 8, barThickness: 38,
-          }],
+          labels: ['Cost / Selling', 'Margin', 'Time'],
+          datasets: [{ data: [costOfSellPct, marginPct, c.timePct * 100],
+            backgroundColor: [costOfSellPct >= 100 ? '#ef4444' : '#3b82f6', marginPct >= 15 ? '#22c55e' : '#eab308', '#a78bfa'],
+            borderRadius: 8, barThickness: 28 }],
         },
         options: {
-          indexAxis: "y", responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.raw.toFixed(1) + "%" } } },
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.raw.toFixed(1) + '%' } } },
           scales: {
-            x: { max: 100, grid: { color: "rgba(255,255,255,0.06)" }, ticks: { color: "#8b9bb4", callback: v => v + "%" } },
-            y: { grid: { display: false }, ticks: { color: "#e8eef7", font: { weight: "600" } } },
+            x: { max: 100, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#8b9bb4', callback: v => v + '%' } },
+            y: { grid: { display: false }, ticks: { color: '#e8eef7', font: { weight: '600', size: 11 } } },
           },
         },
       });
-      const ctx2 = document.getElementById("chartBudget");
-      if (!ctx2) return;
+      const ctx2 = document.getElementById('chartBudget'); if (!ctx2) return;
       if (chartBudget) chartBudget.destroy();
-      const colors = ["#3b82f6","#06b6d4","#22c55e","#eab308","#f97316","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#6366f1","#84cc16"];
-      chartBudget = new Chart(ctx2.getContext("2d"), {
-        type: "doughnut",
-        data: {
-          labels: state.budget.map(b => b.name),
-          datasets: [{ data: state.budget.map(b => b.estimated), backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }],
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: ctx => {
-                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                  const pct = total ? ((ctx.raw / total) * 100).toFixed(1) : 0;
-                  return ` ${fmt(ctx.raw)} (${pct}%)`;
-                },
-              },
-            },
-          },
-          cutout: "60%",
-        },
+      const colors = ['#3b82f6','#06b6d4','#22c55e','#eab308','#f97316','#ef4444','#8b5cf6','#ec4899'];
+      chartBudget = new Chart(ctx2.getContext('2d'), {
+        type: 'doughnut',
+        data: { labels: (p.budget || []).map(b => b.name), datasets: [{ data: (p.budget || []).map(b => b.estimated), backgroundColor: colors, borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '58%' },
       });
     }
 
     function fillProjectForm() {
-      document.getElementById("f-name").value = state.project.name || "";
-      document.getElementById("f-code").value = state.project.code || "";
-      document.getElementById("f-manager").value = state.project.manager || "";
-      document.getElementById("f-client").value = state.project.client || "";
-      document.getElementById("f-start").value = state.project.start || "";
-      document.getElementById("f-end").value = state.project.end || "";
+      const p = currentProject(); if (!p) return;
+      document.getElementById('f-name').value = p.info.name || '';
+      document.getElementById('f-code').value = p.info.code || '';
+      document.getElementById('f-manager').value = p.info.manager || '';
+      document.getElementById('f-client').value = p.info.client || '';
+      document.getElementById('f-selling').value = p.info.selling || 0;
+      document.getElementById('f-sell-cur').value = p.info.sellingCurrency || getFx(p).base || 'USD';
+      document.getElementById('f-start').value = p.info.start || '';
+      document.getElementById('f-end').value = p.info.end || '';
     }
-    function saveProject() {
-      state.project.name = document.getElementById("f-name").value.trim() || state.project.name;
-      state.project.code = document.getElementById("f-code").value.trim() || state.project.code;
-      state.project.manager = document.getElementById("f-manager").value.trim();
-      state.project.client = document.getElementById("f-client").value.trim();
-      state.project.start = document.getElementById("f-start").value;
-      state.project.end = document.getElementById("f-end").value;
-      saveState();
-      toast("Project info saved");
-      updateDashboard();
+    function saveProjectInfo() {
+      const p = currentProject(); if (!p) return;
+      p.info.name = document.getElementById('f-name').value.trim() || p.info.name;
+      p.info.code = document.getElementById('f-code').value.trim() || p.info.code;
+      p.info.manager = document.getElementById('f-manager').value.trim();
+      p.info.client = document.getElementById('f-client').value.trim();
+      p.info.selling = Number(document.getElementById('f-selling').value) || 0;
+      p.info.sellingCurrency = document.getElementById('f-sell-cur').value || 'USD';
+      p.info.start = document.getElementById('f-start').value;
+      p.info.end = document.getElementById('f-end').value;
+      saveStore();
+      document.getElementById('hdr-code').textContent = p.info.code;
+      toast('Saved');
+    }
+
+    function onShipTypeChange(idx, value) {
+      const el = document.getElementById('ship-est-' + idx);
+      if (el && value) el.value = shipEstFromType(value);
     }
 
     function fillBudgetForm() {
-      const tbody = document.getElementById("budget-edit-tbody");
-      tbody.innerHTML = state.budget.map((b, i) => {
-        const ed = estDays(b);
-        const ad = actDays(b);
-        return `
+      const p = currentProject(); if (!p) return;
+      document.getElementById('budget-edit-tbody').innerHTML = (p.budget || []).map((b, i) => `
         <tr>
           <td>${i + 1}</td>
-          <td><input class="input-cell" data-idx="${i}" data-field="name" value="${escapeHtml(b.name)}" style="min-width:120px" /></td>
-          <td class="num"><input type="number" class="input-cell currency" data-idx="${i}" data-field="estimated" value="${b.estimated}" min="0" step="100" style="max-width:95px" /></td>
-          <td><input type="date" class="input-cell" data-idx="${i}" data-field="estStart" value="${b.estStart || ""}" style="min-width:118px" /></td>
-          <td><input type="date" class="input-cell" data-idx="${i}" data-field="estEnd" value="${b.estEnd || ""}" style="min-width:118px" /></td>
-          <td class="num">${ed || "—"}</td>
-          <td><input type="date" class="input-cell" data-idx="${i}" data-field="actStart" value="${b.actStart || ""}" style="min-width:118px" /></td>
-          <td><input type="date" class="input-cell" data-idx="${i}" data-field="actEnd" value="${b.actEnd || ""}" style="min-width:118px" /></td>
-          <td class="num">${ad || (b.actStart ? "…" : "—")}</td>
+          <td><input class="input-cell" data-idx="${i}" data-field="name" value="${escapeHtml(b.name)}" style="min-width:160px" /></td>
+          <td class="num"><input type="number" class="input-cell" data-idx="${i}" data-field="estimated" value="${b.estimated}" min="0" style="min-width:110px" /></td>
+          <td>
+            <select class="input-cell" data-idx="${i}" data-field="currency" style="min-width:90px">
+              <option value="CHF" ${b.currency==='CHF'?'selected':''}>CHF</option>
+              <option value="USD" ${(b.currency||'USD')==='USD'?'selected':''}>USD</option>
+              <option value="EUR" ${b.currency==='EUR'?'selected':''}>EUR</option>
+              <option value="EGP" ${b.currency==='EGP'?'selected':''}>EGP</option>
+            </select>
+          </td>
+          <td class="num"><input type="number" class="input-cell" data-idx="${i}" data-field="mfgEstDays" value="${b.mfgEstDays||0}" min="0" style="min-width:80px" /></td>
+          <td class="num"><input type="number" class="input-cell" data-idx="${i}" data-field="mfgActDays" value="${b.mfgActDays||0}" min="0" style="min-width:80px" /></td>
+          <td>
+            <select class="input-cell" data-idx="${i}" data-field="shippingType" onchange="onShipTypeChange(${i}, this.value)" style="min-width:165px">
+              <option value="">—</option>
+              <option value="express" ${b.shippingType==='express'?'selected':''}>⚡ Express (2w)</option>
+              <option value="flight" ${b.shippingType==='flight'?'selected':''}>✈️ Flight (1.5m)</option>
+              <option value="sea" ${b.shippingType==='sea'?'selected':''}>🚢 Sea (2–3m)</option>
+              <option value="local" ${b.shippingType==='local'?'selected':''}>🚚 Local (2w)</option>
+            </select>
+          </td>
+          <td class="num"><input type="number" class="input-cell" data-idx="${i}" data-field="shipEstDays" id="ship-est-${i}" value="${b.shipEstDays||0}" min="0" style="min-width:80px" /></td>
+          <td class="num"><input type="number" class="input-cell" data-idx="${i}" data-field="shipActDays" value="${b.shipActDays||0}" min="0" style="min-width:80px" /></td>
+          <td><input type="date" class="input-cell" data-idx="${i}" data-field="estStart" value="${b.estStart||''}" style="min-width:150px" /></td>
+          <td><input type="date" class="input-cell" data-idx="${i}" data-field="estEnd" value="${b.estEnd||''}" style="min-width:150px" /></td>
+          <td class="num">${estDays(b)||'—'}</td>
+          <td><input type="date" class="input-cell" data-idx="${i}" data-field="actStart" value="${b.actStart||''}" style="min-width:150px" /></td>
+          <td><input type="date" class="input-cell" data-idx="${i}" data-field="actEnd" value="${b.actEnd||''}" style="min-width:150px" /></td>
+          <td class="num">${actDays(b)||(b.actStart?'…':'—')}</td>
           <td><button class="btn btn-sm btn-danger" onclick="deleteCategory(${b.id})">✕</button></td>
-        </tr>`;
-      }).join("");
-      document.getElementById("budget-total-label").textContent = fmt(state.budget.reduce((s, b) => s + (Number(b.estimated) || 0), 0));
-      document.getElementById("new-cat-name").value = "";
-      document.getElementById("new-cat-amount").value = "";
-      document.getElementById("new-cat-est-start").value = state.project.start || "";
-      document.getElementById("new-cat-est-end").value = state.project.end || "";
+        </tr>`).join('');
+      document.getElementById('budget-total-label').textContent = fmt((p.budget||[]).reduce((s,b)=>s+(Number(b.estimated)||0),0));
+      document.getElementById('new-cat-name').value = '';
+      document.getElementById('new-cat-amount').value = '';
+      document.getElementById('new-cat-mfg').value = '0';
+      document.getElementById('new-cat-ship').value = '';
+      document.getElementById('new-cat-est-start').value = p.info.start || '';
+      document.getElementById('new-cat-est-end').value = p.info.end || '';
     }
 
     function saveBudget() {
-      document.querySelectorAll("#budget-edit-tbody input").forEach(inp => {
-        const i = Number(inp.dataset.idx);
-        const field = inp.dataset.field;
-        if (field === "name") {
-          const name = inp.value.trim();
-          if (name) state.budget[i].name = name;
-        } else if (field === "estimated") {
-          state.budget[i].estimated = Number(inp.value) || 0;
-        } else if (["estStart", "estEnd", "actStart", "actEnd"].includes(field)) {
-          state.budget[i][field] = inp.value;
+      const p = currentProject(); if (!p) return;
+      document.querySelectorAll('#budget-edit-tbody input, #budget-edit-tbody select').forEach(inp => {
+        const i = Number(inp.dataset.idx), field = inp.dataset.field;
+        if (field === 'name') { const n = inp.value.trim(); if (n) p.budget[i].name = n; }
+        else if (['estimated','mfgEstDays','mfgActDays','shipEstDays','shipActDays'].includes(field)) p.budget[i][field] = Number(inp.value) || 0;
+        else if (field === 'currency') p.budget[i].currency = inp.value || 'USD';
+        else if (field === 'shippingType') {
+          p.budget[i].shippingType = inp.value;
+          if (inp.value) p.budget[i].shipEstDays = shipEstFromType(inp.value);
         }
+        else if (['estStart','estEnd','actStart','actEnd'].includes(field)) p.budget[i][field] = inp.value;
       });
-      saveState();
-      toast("Budget + time saved");
+      // re-read ship est after type may have changed
+      document.querySelectorAll('#budget-edit-tbody input[data-field="shipEstDays"]').forEach(inp => {
+        p.budget[Number(inp.dataset.idx)].shipEstDays = Number(inp.value) || 0;
+      });
+      saveStore();
+      toast('Saved');
       fillBudgetForm();
-      updateDashboard();
     }
 
     function addCategory() {
-      const name = document.getElementById("new-cat-name").value.trim();
-      const amount = Number(document.getElementById("new-cat-amount").value) || 0;
-      const estStart = document.getElementById("new-cat-est-start").value;
-      const estEnd = document.getElementById("new-cat-est-end").value;
-      if (!name) {
-        toast("Enter a category name", "error");
-        return;
-      }
-      if (state.budget.some(b => b.name.toLowerCase() === name.toLowerCase())) {
-        toast("This category already exists", "error");
-        return;
-      }
-      state.budget.push({
-        id: nextBudgetId++,
-        name,
-        estimated: amount,
-        estStart: estStart || state.project.start || "",
-        estEnd: estEnd || state.project.end || "",
-        actStart: "",
-        actEnd: "",
+      const p = currentProject(); if (!p) return;
+      const name = document.getElementById('new-cat-name').value.trim();
+      if (!name) { toast('Enter name', 'error'); return; }
+      if (p.budget.some(b => b.name.toLowerCase() === name.toLowerCase())) { toast('Exists', 'error'); return; }
+      const shipType = document.getElementById('new-cat-ship').value;
+      const catCur = document.getElementById('new-cat-cur').value || getFx(p).base;
+      p.budget.push({
+        id: nextBudgetId++, name,
+        estimated: Number(document.getElementById('new-cat-amount').value) || 0,
+        currency: catCur,
+        mfgEstDays: Number(document.getElementById('new-cat-mfg').value) || 0, mfgActDays: 0,
+        shippingType: shipType, shipEstDays: shipEstFromType(shipType), shipActDays: 0,
+        estStart: document.getElementById('new-cat-est-start').value || p.info.start || '',
+        estEnd: document.getElementById('new-cat-est-end').value || p.info.end || '',
+        actStart: '', actEnd: '',
       });
-      saveState();
-      toast("Category added: " + name);
+      saveStore();
+      toast('Category added');
       fillBudgetForm();
-      updateDashboard();
     }
 
     function deleteCategory(id) {
-      const cat = state.budget.find(b => b.id === id);
-      if (!cat) return;
-      const used = state.costs.some(c => c.category === cat.name);
-      if (used && !confirm(`"${cat.name}" has cost entries. Delete anyway?`)) return;
-      if (!used && !confirm(`Delete category "${cat.name}"?`)) return;
-      state.budget = state.budget.filter(b => b.id !== id);
-      saveState();
-      toast("Category deleted");
+      const p = currentProject(); if (!p) return;
+      if (!confirm('Delete category?')) return;
+      p.budget = p.budget.filter(b => b.id !== id);
+      saveStore();
+      toast('Deleted');
       fillBudgetForm();
-      updateDashboard();
+    }
+
+    function onCostCategoryChange() {
+      const p = currentProject(); if (!p) return;
+      const name = document.getElementById('c-category').value;
+      const preview = document.getElementById('c-cat-preview');
+      const b = (p.budget || []).find(x => x.name === name);
+      if (!b) {
+        preview.style.display = 'none';
+        document.getElementById('c-mfg-act').value = '';
+        document.getElementById('c-ship-act').value = '';
+        document.getElementById('c-act-start').value = '';
+        document.getElementById('c-act-end').value = '';
+        return;
+      }
+      const ship = b.shippingType ? shipBadgeHtml(b.shippingType) : '—';
+      preview.style.display = 'block';
+      preview.innerHTML =
+        '<strong>Estimated plan:</strong> Cost ' + fmt(b.estimated) +
+        ' · Mfg ' + (b.mfgEstDays || 0) + 'd' +
+        ' · Ship ' + ship + (b.shipEstDays ? ' (' + b.shipEstDays + 'd)' : '') +
+        '<br><span style="opacity:0.85">Enter actual cost & times below when you receive this item.</span>';
+      document.getElementById('c-category-new').value = '';
+      // show existing actuals if any (can overwrite)
+      document.getElementById('c-mfg-act').value = b.mfgActDays || '';
+      document.getElementById('c-ship-act').value = b.shipActDays || '';
+      document.getElementById('c-act-start').value = b.actStart || '';
+      document.getElementById('c-act-end').value = b.actEnd || '';
+      document.getElementById('c-currency').value = b.currency || getFx(p).base || 'USD';
+    }
+    function onNewCatInput() {
+      const v = document.getElementById('c-category-new').value.trim();
+      if (v) document.getElementById('c-cat-preview').style.display = 'none';
     }
 
     function fillCostForm() {
-      document.getElementById("c-date").value = new Date().toISOString().slice(0, 10);
-      document.getElementById("c-desc").value = "";
-      document.getElementById("c-vendor").value = "";
-      document.getElementById("c-amount").value = "";
-      document.getElementById("c-category-new").value = "";
-      const sel = document.getElementById("c-category");
-      sel.innerHTML = state.budget.map(b => `<option value="${escapeHtml(b.name)}">${escapeHtml(b.name)}</option>`).join("");
-      const total = state.costs.reduce((s, c) => s + (Number(c.amount) || 0), 0);
-      document.getElementById("cost-total-label").textContent = fmt(total);
-      const tbody = document.getElementById("cost-tbody");
-      if (!state.costs.length) {
-        tbody.innerHTML = `<tr><td colspan="5" class="empty">No costs yet.</td></tr>`;
-        return;
+      const p = currentProject(); if (!p) return;
+      document.getElementById('c-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('c-desc').value = '';
+      document.getElementById('c-vendor').value = '';
+      document.getElementById('c-amount').value = '';
+      document.getElementById('c-category-new').value = '';
+      document.getElementById('c-mfg-act').value = '';
+      document.getElementById('c-ship-act').value = '';
+      document.getElementById('c-act-start').value = '';
+      document.getElementById('c-act-end').value = '';
+      const sel = document.getElementById('c-category');
+      const items = p.budget || [];
+      if (!items.length) {
+        sel.innerHTML = '<option value="">— Add categories in Budget first —</option>';
+      } else {
+        sel.innerHTML = items.map(b => {
+          const spent = (p.costs || []).filter(c => c.category === b.name).reduce((s, c) => s + (Number(c.amount) || 0), 0);
+          const left = (Number(b.estimated) || 0) - spent;
+          return '<option value="' + escapeHtml(b.name) + '">' + escapeHtml(b.name) +
+            '  ·  Est ' + fmt(b.estimated) + '  ·  Spent ' + fmt(spent) + '</option>';
+        }).join('');
       }
-      const sorted = [...state.costs].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-      tbody.innerHTML = sorted.map(c => `
-        <tr>
-          <td>${formatDisplayDate(c.date)}</td>
-          <td>${escapeHtml(c.category)}</td>
-          <td>${escapeHtml(c.desc || "—")}</td>
-          <td class="num">${fmt(c.amount)}</td>
-          <td><button class="btn btn-sm btn-danger" onclick="deleteCost(${c.id})">✕</button></td>
-        </tr>
-      `).join("");
+      onCostCategoryChange();
+      document.getElementById('cost-total-label').textContent = fmt((p.costs||[]).reduce((s,c)=>s+(Number(c.amount)||0),0));
+      const tbody = document.getElementById('cost-tbody');
+      if (!(p.costs||[]).length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No costs</td></tr>'; return; }
+      const sorted = [...p.costs].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+      tbody.innerHTML = sorted.map(c => '<tr>' +
+        '<td>' + formatDisplayDate(c.date) + '</td><td>' + escapeHtml(c.category) + '</td><td>' + escapeHtml(c.desc||'—') + '</td>' +
+        '<td class="num">' + fmtCur(c.amount, c.currency || 'USD') + '</td>' +
+        '<td><button class="btn btn-sm btn-danger" onclick="deleteCost(' + c.id + ')">✕</button></td>' +
+      '</tr>').join('');
     }
-
     function addCost() {
-      const date = document.getElementById("c-date").value;
-      let category = document.getElementById("c-category-new").value.trim();
-      if (!category) category = document.getElementById("c-category").value;
-      const desc = document.getElementById("c-desc").value.trim();
-      const vendor = document.getElementById("c-vendor").value.trim();
-      const amount = Number(document.getElementById("c-amount").value);
-      if (!date || !category || !amount || amount <= 0) {
-        toast("Fill date, category and a valid amount", "error");
-        return;
+      const p = currentProject(); if (!p) return;
+      const date = document.getElementById('c-date').value;
+      let category = document.getElementById('c-category-new').value.trim() || document.getElementById('c-category').value;
+      const desc = document.getElementById('c-desc').value.trim();
+      const vendor = document.getElementById('c-vendor').value.trim();
+      const amount = Number(document.getElementById('c-amount').value);
+      if (!date || !category || !amount || amount <= 0) { toast('Fill date, category, amount', 'error'); return; }
+      let item = p.budget.find(b => b.name.toLowerCase() === category.toLowerCase());
+      if (!item) {
+        item = emptyItem(nextBudgetId++, category, p.info.start, p.info.end);
+        p.budget.push(item);
       }
-      if (!state.budget.some(b => b.name.toLowerCase() === category.toLowerCase())) {
-        state.budget.push({
-          id: nextBudgetId++,
-          name: category,
-          estimated: 0,
-          estStart: state.project.start || "",
-          estEnd: state.project.end || "",
-          actStart: "",
-          actEnd: "",
-        });
-        toast("New category added — set cost & time in Budget + Time");
-      }
-      state.costs.push({ id: nextCostId++, date, category, desc, vendor, amount });
-      saveState();
-      toast("Cost added");
-      fillCostForm();
-      updateDashboard();
-    }
+      // Update actual times on the category (estimated stays unchanged)
+      const mfgAct = document.getElementById('c-mfg-act').value;
+      const shipAct = document.getElementById('c-ship-act').value;
+      const actStart = document.getElementById('c-act-start').value;
+      const actEnd = document.getElementById('c-act-end').value;
+      if (mfgAct !== '') item.mfgActDays = Number(mfgAct) || 0;
+      if (shipAct !== '') item.shipActDays = Number(shipAct) || 0;
+      if (actStart) item.actStart = actStart;
+      if (actEnd) item.actEnd = actEnd;
+      // if only date given and no act end, use invoice/received date as act end
+      if (!item.actEnd && date) item.actEnd = date;
+      if (!item.actStart && date) item.actStart = date;
 
-    function deleteCost(id) {
-      if (!confirm("Delete this cost entry?")) return;
-      state.costs = state.costs.filter(c => c.id !== id);
-      saveState();
-      toast("Cost deleted");
+      const currency = document.getElementById('c-currency').value || getFx(p).base;
+      if (!p.costs) p.costs = [];
+      p.costs.push({ id: nextCostId++, date, category, desc, vendor, amount, currency });
+      saveStore();
+      toast('Actual cost & time saved');
       fillCostForm();
-      updateDashboard();
+    }
+    function deleteCost(id) {
+      const p = currentProject(); if (!p) return;
+      if (!confirm('Delete cost?')) return;
+      p.costs = p.costs.filter(c => c.id !== id);
+      saveStore();
+      toast('Deleted');
+      fillCostForm();
     }
 
     function fillAlarmForm() {
-      document.getElementById("th-warning").value = state.thresholds.warning;
-      document.getElementById("th-critical").value = state.thresholds.critical;
-      document.getElementById("lbl-th-warn").textContent = state.thresholds.warning + "%";
+      const p = currentProject(); if (!p) return;
+      const th = p.thresholds || { warning: 80, critical: 95, minMargin: 15 };
+      document.getElementById('th-warning').value = th.warning;
+      document.getElementById('th-critical').value = th.critical;
+      document.getElementById('th-margin').value = th.minMargin ?? 15;
+      document.getElementById('lbl-th-warn').textContent = th.warning + '%';
     }
     function saveAlarms() {
-      const w = Number(document.getElementById("th-warning").value) || 80;
-      const crit = Number(document.getElementById("th-critical").value) || 95;
-      state.thresholds.warning = Math.min(99, Math.max(1, w));
-      state.thresholds.critical = Math.min(100, Math.max(1, crit));
-      document.getElementById("lbl-th-warn").textContent = state.thresholds.warning + "%";
-      saveState();
-      toast("Alarm thresholds saved");
-      updateDashboard();
+      const p = currentProject(); if (!p) return;
+      p.thresholds = {
+        warning: Math.min(99, Math.max(1, Number(document.getElementById('th-warning').value) || 80)),
+        critical: Math.min(100, Math.max(1, Number(document.getElementById('th-critical').value) || 95)),
+        minMargin: Math.min(100, Math.max(0, Number(document.getElementById('th-margin').value) || 15)),
+      };
+      document.getElementById('lbl-th-warn').textContent = p.thresholds.warning + '%';
+      saveStore();
+      toast('Saved');
     }
-    document.getElementById("th-warning")?.addEventListener("input", function () {
-      document.getElementById("lbl-th-warn").textContent = (this.value || 0) + "%";
+    document.getElementById('th-warning')?.addEventListener('input', function () {
+      document.getElementById('lbl-th-warn').textContent = (this.value || 0) + '%';
     });
 
-    function exportJSON() {
-      const data = {
-        version: 5,
-        exportedAt: new Date().toISOString(),
-        project: state.project,
-        budget: state.budget,
-        costs: state.costs,
-        thresholds: state.thresholds,
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const code = (state.project.code || "project").replace(/[^a-z0-9_-]/gi, "_");
-      a.download = `cost_control_${code}_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast("JSON file downloaded");
+    function fillCurrencyForm() {
+      const p = currentProject(); if (!p) return;
+      const fx = getFx(p);
+      document.getElementById('fx-base').value = fx.base;
+      document.getElementById('fx-base-label').textContent = fx.base;
+      CURRENCIES.forEach(c => {
+        document.getElementById('fx-' + c).value = fx.rates[c] != null ? fx.rates[c] : (DEFAULT_RATES[c] || 1);
+        document.getElementById('fx-risk-' + c).value = fx.risk[c] != null ? fx.risk[c] : (DEFAULT_RISK[c] || 3);
+        document.getElementById('fx-' + c).disabled = (c === fx.base);
+        if (c === fx.base) document.getElementById('fx-' + c).value = 1;
+      });
+      renderFxRisk(p, fx);
+    }
+    function onBaseCurrencyChange() {
+      const base = document.getElementById('fx-base').value;
+      document.getElementById('fx-base-label').textContent = base;
+      CURRENCIES.forEach(c => {
+        document.getElementById('fx-' + c).disabled = (c === base);
+        if (c === base) document.getElementById('fx-' + c).value = 1;
+      });
+    }
+    function saveCurrency() {
+      const p = currentProject(); if (!p) return;
+      const base = document.getElementById('fx-base').value;
+      const rates = {}, risk = {};
+      CURRENCIES.forEach(c => {
+        rates[c] = c === base ? 1 : (Number(document.getElementById('fx-' + c).value) || DEFAULT_RATES[c] || 1);
+        risk[c] = Number(document.getElementById('fx-risk-' + c).value) || DEFAULT_RISK[c] || 3;
+      });
+      p.fx = { base, rates, risk };
+      saveStore();
+      toast('Currency rates saved');
+      renderFxRisk(p, getFx(p));
+    }
+    function renderFxRisk(p, fx) {
+      const sellCur = p.info.sellingCurrency || fx.base;
+      const sellAmt = Number(p.info.selling) || 0;
+      const byCur = {};
+      CURRENCIES.forEach(c => { byCur[c] = { sell: 0, cost: 0 }; });
+      byCur[sellCur].sell += sellAmt;
+      (p.costs || []).forEach(c => {
+        const cur = c.currency || fx.base;
+        if (!byCur[cur]) byCur[cur] = { sell: 0, cost: 0 };
+        byCur[cur].cost += Number(c.amount) || 0;
+      });
+      let totalRisk = 0;
+      const rows = CURRENCIES.map(c => {
+        const sell = byCur[c].sell;
+        const cost = byCur[c].cost;
+        const net = sell - cost; // positive = long foreign currency
+        const inBase = toBase(net, c, fx);
+        const riskPct = (fx.risk[c] || 0) / 100;
+        // adverse: if net > 0 (receive that currency), rate drop hurts; if net < 0 (pay that currency), rate rise hurts
+        const impact = Math.abs(inBase) * riskPct;
+        totalRisk += impact;
+        if (sell === 0 && cost === 0) return null;
+        return '<tr>' +
+          '<td><span class="cur-badge cur-' + c + '">' + (CUR_FLAGS[c] || '') + ' ' + c + '</span></td>' +
+          '<td class="num">' + (sell ? fmtCur(sell, c) : '—') + '</td>' +
+          '<td class="num">' + (cost ? fmtCur(cost, c) : '—') + '</td>' +
+          '<td class="num">' + fmtCur(net, c) + '</td>' +
+          '<td class="num">' + fmtCur(inBase, fx.base) + '</td>' +
+          '<td class="num" style="color:var(--warning)">± ' + fmtCur(impact, fx.base) + '</td>' +
+        '</tr>';
+      }).filter(Boolean);
+      document.getElementById('fx-risk-tbody').innerHTML = rows.length ? rows.join('') :
+        '<tr><td colspan="6" class="empty">No multi-currency amounts yet</td></tr>';
+      document.getElementById('fx-risk-note').textContent =
+        'Base: ' + fx.base + ' · Approx. total FX risk (sum of ± moves): ' + fmtCur(totalRisk, fx.base) +
+        '. Risk uses your ±% on each currency exposure.';
     }
 
+    function exportJSON() {
+      const data = { version: 8, exportedAt: new Date().toISOString(), projects: store.projects };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `projects_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('JSON downloaded');
+    }
     function importJSON() {
-      const fileInput = document.getElementById("import-file");
+      const fileInput = document.getElementById('import-file');
       const file = fileInput.files?.[0];
-      if (!file) {
-        toast("Choose a JSON file first", "error");
-        return;
-      }
+      if (!file) { toast('Choose a file', 'error'); return; }
       const reader = new FileReader();
       reader.onload = function (e) {
         try {
           const data = JSON.parse(e.target.result);
-          if (!data.project || !Array.isArray(data.budget) || !Array.isArray(data.costs)) {
-            toast("Invalid JSON format", "error");
-            return;
-          }
-          if (!confirm("Load this file? Current data will be replaced.")) return;
-          state.project = data.project;
-          state.budget = data.budget.map(b => ({
-            ...b,
-            estStart: b.estStart || b.start || data.project?.start || "",
-            estEnd: b.estEnd || b.end || data.project?.end || "",
-            actStart: b.actStart || "",
-            actEnd: b.actEnd || "",
+          if (!Array.isArray(data.projects)) { toast('Invalid file', 'error'); return; }
+          if (!confirm('Replace all projects with this file?')) return;
+          store.projects = data.projects.map(p => ({
+            ...p,
+            info: { selling: 0, ...p.info },
+            thresholds: { minMargin: 15, warning: 80, critical: 95, ...p.thresholds },
+            budget: (p.budget || []).map(b => ({
+              mfgEstDays: 0, mfgActDays: 0, shippingType: '', shipEstDays: 0, shipActDays: 0, ...b,
+            })),
           }));
-          state.costs = data.costs;
-          state.thresholds = data.thresholds || { warning: 80, critical: 95 };
-          if (state.budget.length) nextBudgetId = Math.max(...state.budget.map(b => b.id || 0)) + 1;
-          if (state.costs.length) nextCostId = Math.max(...state.costs.map(c => c.id || 0)) + 1;
-          saveState();
-          toast("Data loaded from JSON");
-          fileInput.value = "";
-          showView("dashboard");
-        } catch (err) {
-          toast("Could not read JSON file", "error");
-        }
+          store.currentProjectId = null;
+          saveStore();
+          toast('Imported');
+          fileInput.value = '';
+          showView('home');
+        } catch (err) { toast('Could not read JSON', 'error'); }
       };
       reader.readAsText(file);
     }
 
-    function resetAllData() {
-      if (!confirm("Reset to sample data? All changes will be lost.")) return;
-      state = {
-        project: {
-          name: "Electrical Installation – Building A",
-          code: "EL-2026-001",
-          manager: "Project Manager",
-          client: "",
-          start: "2026-01-15",
-          end: "2026-08-30",
-        },
-        budget: structuredClone(DEFAULT_BUDGET),
-        costs: structuredClone(DEFAULT_COSTS),
-        thresholds: { warning: 80, critical: 95 },
-      };
-      nextBudgetId = 100;
-      nextCostId = 100;
-      saveState();
-      toast("Reset to sample data");
-      showView("dashboard");
-    }
-
-    loadState();
-    updateDashboard();
+    loadStore();
+    checkSession();
   </script>
 </body>
 </html>
