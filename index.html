@@ -321,7 +321,7 @@
                   <th>Category</th><th class="num">Est. Cost</th><th class="num">Act. Cost</th><th class="num">Cost %</th>
                   <th class="num">Mfg Est</th><th class="num">Mfg Act</th>
                   <th>Ship Type</th><th class="num">Ship Est</th><th class="num">Ship Act</th>
-                  <th class="num">Sched Est</th><th class="num">Sched Act</th><th>Status</th>
+                  <th>Est. Dates</th><th>Actual Dates</th><th>Date Status</th>
                 </tr></thead>
                 <tbody id="band-tbody"></tbody>
               </table>
@@ -743,6 +743,14 @@
       const end = e || today; if (end < s) return 0;
       return daysBetween(s, end);
     }
+    function estRangeText(b) {
+      if (!b.estStart && !b.estEnd) return '—';
+      return formatDisplayDate(b.estStart) + ' → ' + formatDisplayDate(b.estEnd);
+    }
+    function actRangeText(b) {
+      if (!b.actStart) return 'Not started';
+      return formatDisplayDate(b.actStart) + ' → ' + (b.actEnd ? formatDisplayDate(b.actEnd) : 'ongoing');
+    }
     function timeStatus(b) {
       const est = estDays(b), act = actDays(b);
       if (!b.actStart) return { label: 'Not started', cls: 'time-soon', variance: null };
@@ -1028,7 +1036,7 @@
           <td class="num">${mfgEst || '—'}</td><td class="num">${mfgAct || '—'}</td>
           <td>${shipBadgeHtml(b.shippingType)}</td>
           <td class="num">${shipEst || '—'}</td><td class="num">${shipAct || '—'}</td>
-          <td class="num">${ed || '—'}</td><td class="num">${ad || (b.actStart ? '0' : '—')}</td>
+          <td>${estRangeText(b)}</td><td>${actRangeText(b)}</td>
           <td><span class="time-tag ${st.cls}">${st.label}</span></td>
         </tr>`;
       }).join('');
@@ -1103,10 +1111,10 @@
               <div class="item-num"><div class="item-num-label">Ship Est</div><div class="item-num-value">${shipEst || '—'}</div></div>
               <div class="item-num"><div class="item-num-label">Ship Act</div><div class="item-num-value">${shipAct || '—'}</div></div>
             </div>
-            <div class="item-group-title">Schedule (days)</div>
+            <div class="item-group-title">Schedule status</div>
             <div class="item-numbers">
-              <div class="item-num"><div class="item-num-label">Sched Est</div><div class="item-num-value">${ed || '—'}</div></div>
-              <div class="item-num"><div class="item-num-label">Sched Act</div><div class="item-num-value">${ad || (b.actStart ? '0' : '—')}</div></div>
+              <div class="item-num"><div class="item-num-label">Estimated dates</div><div class="item-num-value" style="font-size:0.78rem">${estRangeText(b)}</div></div>
+              <div class="item-num"><div class="item-num-label">Actual dates</div><div class="item-num-value" style="font-size:0.78rem">${actRangeText(b)}</div></div>
             </div>
             <div class="item-foot">
               ${shipBadgeHtml(b.shippingType)}
