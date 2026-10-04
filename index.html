@@ -131,6 +131,13 @@
     .time-done { background: rgba(34,197,94,0.15); color: #86efac; }
     .time-late { background: rgba(239,68,68,0.15); color: #fca5a5; }
     .time-soon { background: rgba(234,179,8,0.15); color: #fde047; }
+    .time-alarm { background: var(--danger); color: #fff; font-weight: 700; animation: alarmPulse 1.4s infinite; }
+    @keyframes alarmPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.55); } 50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); } }
+    .item-block.st-alarm { border-color: var(--danger); box-shadow: 0 0 0 1px var(--danger), 0 0 18px rgba(239,68,68,0.25); }
+    .alarm-banner { background: rgba(239,68,68,0.12); border: 1px solid var(--danger); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1.1rem; }
+    .alarm-title { font-weight: 700; color: #fca5a5; margin-bottom: 0.5rem; }
+    .alarm-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.4rem 0; border-top: 1px solid rgba(239,68,68,0.25); font-size: 0.85rem; flex-wrap: wrap; }
+    .nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 0.68rem; font-weight: 700; min-width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 10px; padding: 0 5px; animation: alarmPulse 1.4s infinite; }
     .var-pos { color: var(--success); } .var-neg { color: var(--danger); }
     .project-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; cursor: pointer; transition: border-color 0.2s, transform 0.15s; box-shadow: var(--shadow); }
     .project-card:hover { border-color: var(--primary); transform: translateY(-2px); }
@@ -224,8 +231,8 @@
         <button class="nav-item" data-view="project" id="nav-project" style="display:none" onclick="showView('project')"><span class="icon">📁</span> Project Info</button>
         <button class="nav-item" data-view="budget" id="nav-budget" style="display:none" onclick="showView('budget')"><span class="icon">💰</span> Budget + Time</button>
         <button class="nav-item" data-view="costs" id="nav-costs" style="display:none" onclick="showView('costs')"><span class="icon">📝</span> Actual (received)</button>
-        <button class="nav-item" data-view="alarms" id="nav-alarms" style="display:none" onclick="showView('alarms')"><span class="icon">🔔</span> Alarms</button>
-        <button class="nav-item" data-view="currency" id="nav-currency" style="display:none" onclick="showView('currency')"><span class="icon">💱</span> Currency Risk</button>
+        <button class="nav-item" data-view="alarms" id="nav-alarms" style="display:none" onclick="showView('alarms')"><span class="icon">🔔</span> Alarms <span class="nav-badge" id="nav-alarm-count" style="display:none"></span></button>
+        <button class="nav-item" data-view="currency" id="nav-currency" style="display:none" onclick="showView('currency')"><span class="icon">💱</span> Currency Rates</button>
         <div class="nav-section">Data</div>
         <button class="nav-item" data-view="export" onclick="showView('export')"><span class="icon">💾</span> JSON Save / Load</button>
         <button class="nav-item" data-view="help" onclick="showView('help')"><span class="icon">❓</span> Help</button>
@@ -282,6 +289,7 @@
         </div>
 
         <div class="view" id="view-dashboard">
+          <div id="delivery-alarm-banner"></div>
           <div class="grid grid-kpi">
             <div class="card kpi kpi-sell"><div class="card-title">Selling Price</div><div class="kpi-value" id="kpi-selling">$0</div><div class="kpi-label">Contract value</div></div>
             <div class="card kpi kpi-budget"><div class="card-title">Estimated Cost</div><div class="kpi-value" id="kpi-budget">$0</div><div class="kpi-label">Planned</div></div>
@@ -379,9 +387,9 @@
                     <option value="EGP">🇪🇬 EGP</option>
                   </select>
                 </div>
-                <div class="form-group"><label>Mfg Est. days</label><input type="number" class="input-cell" id="new-cat-mfg" min="0" value="0" /></div>
+                <div class="form-group"><label>Mfg Est. days</label><input type="number" class="input-cell" id="new-cat-mfg" min="0" value="0" oninput="onNewCatAutoEnd()" /></div>
                 <div class="form-group"><label>Shipping type</label>
-                  <select class="input-cell" id="new-cat-ship">
+                  <select class="input-cell" id="new-cat-ship" onchange="onNewCatAutoEnd()">
                     <option value="">—</option>
                     <option value="express">⚡ Express (2 weeks)</option>
                     <option value="flight">✈️ Flight (1.5 months)</option>
@@ -389,8 +397,8 @@
                     <option value="local">🚚 Local (2 weeks)</option>
                   </select>
                 </div>
-                <div class="form-group"><label>Est. Start</label><input type="date" class="input-cell" id="new-cat-est-start" /></div>
-                <div class="form-group"><label>Est. End</label><input type="date" class="input-cell" id="new-cat-est-end" /></div>
+                <div class="form-group"><label>Est. Start</label><input type="date" class="input-cell" id="new-cat-est-start" oninput="onNewCatAutoEnd()" onchange="onNewCatAutoEnd()" /></div>
+                <div class="form-group"><label>Est. End <span class="hint" id="new-cat-end-mode">⚙ auto = Start + Mfg + Ship</span></label><input type="date" class="input-cell" id="new-cat-est-end" oninput="onNewCatEndTyped()" onchange="onNewCatEndTyped()" /></div>
               </div>
               <button class="btn btn-accent btn-sm" style="margin-top:0.45rem" onclick="addCategory()">＋ Add</button>
             </div>
@@ -401,7 +409,7 @@
                   <th class="num">Mfg Est</th><th class="num">Mfg Act</th>
                   <th>Ship Type</th><th class="num">Ship Est</th><th class="num">Ship Act</th>
                   <th>Est. Start</th><th>Est. End</th><th class="num">Est.d</th>
-                  <th>Act. Start</th><th>Act. End</th><th class="num">Act.d</th><th></th>
+                  <th>Act. Start</th><th>Act. End</th><th class="num">Act.d</th><th>Rcvd</th><th></th>
                 </tr></thead>
                 <tbody id="budget-edit-tbody"></tbody>
               </table>
@@ -419,7 +427,7 @@
               <div class="section-title">＋ Add Actual Cost</div>
               <p class="hint" style="margin-bottom:0.9rem">Use this when the item/cost is <strong>already received</strong> (later in time). Select the same category from estimated plan.</p>
               <div class="form-grid" style="grid-template-columns:1fr">
-                <div class="form-group"><label>Date received / invoice</label><input type="date" class="input-cell" id="c-date" /></div>
+                <div class="form-group"><label>Invoice date <span class="hint">(optional)</span></label><input type="date" class="input-cell" id="c-date" /></div>
                 <div class="form-group">
                   <label>Category (from estimated plan)</label>
                   <select class="input-cell" id="c-category" onchange="onCostCategoryChange()"></select>
@@ -440,15 +448,16 @@
               </div>
               <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid var(--border)">
                 <div style="font-weight:600;font-size:0.85rem;margin-bottom:0.65rem">⏱ Actual time (optional — fill when item arrived)</div>
+                <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;font-size:0.88rem;cursor:pointer"><input type="checkbox" id="c-received" style="width:18px;height:18px" /> ✅ Item received <span class="hint" style="margin:0">(no date needed — clears the red alarm)</span></label>
                 <div class="form-grid">
                   <div class="form-group"><label>Actual Mfg days</label><input type="number" class="input-cell" id="c-mfg-act" min="0" placeholder="e.g. 28" /></div>
                   <div class="form-group"><label>Actual Ship days</label><input type="number" class="input-cell" id="c-ship-act" min="0" placeholder="e.g. 40" /></div>
                   <div class="form-group"><label>Actual start (work)</label><input type="date" class="input-cell" id="c-act-start" /></div>
                   <div class="form-group"><label>Actual end / received</label><input type="date" class="input-cell" id="c-act-end" /></div>
                 </div>
-                <p class="hint">These update the category’s actual times on the dashboard (estimated stays as the original plan).</p>
+                <p class="hint">Dates are never filled automatically — leave them empty if you don’t know them. Estimated plan stays unchanged.</p>
               </div>
-              <div class="actions"><button class="btn btn-success" onclick="addCost()">💾 Save actual</button></div>
+              <div class="actions"><button class="btn btn-success" id="btn-save-cost" onclick="addCost()">💾 Save actual</button></div>
             </div>
             <div class="card">
               <div class="section-title"><span>Cost Log</span><span class="badge">Total: <strong id="cost-total-label">$0</strong></span></div>
@@ -461,6 +470,13 @@
         </div>
 
         <div class="view" id="view-alarms">
+          <div class="card" style="margin-bottom:1rem">
+            <div class="section-title">🚨 Delivery alarms <span class="badge">Red alarm appears when the estimated date arrives and the item is not received</span></div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Item</th><th>Est. arrival</th><th>Status</th><th></th></tr></thead>
+              <tbody id="delivery-alarm-tbody"></tbody>
+            </table></div>
+          </div>
           <div class="card" style="max-width:520px">
             <div class="section-title">🔔 Alarms</div>
             <div class="threshold-row"><span class="dot dot-green"></span><label>Cost On Track below</label><input type="number" class="input-cell" id="th-warning" value="80" /><span>%</span></div>
@@ -472,63 +488,16 @@
         </div>
 
         <div class="view" id="view-currency">
-          <div class="card" style="max-width:640px;margin-bottom:1.1rem">
-            <div class="section-title">💱 Exchange rates (to base currency)</div>
-            <p class="hint" style="margin-bottom:1rem">Set how many <strong id="fx-base-label">USD</strong> = 1 unit of each currency. Used to convert costs & selling for profit and risk.</p>
-            <div class="form-group" style="margin-bottom:1rem;max-width:200px">
-              <label>Project base currency</label>
-              <select class="input-cell" id="fx-base" onchange="onBaseCurrencyChange()">
-                <option value="CHF">🇨🇭 CHF – Swiss Franc</option>
-                <option value="USD">🇺🇸 USD – US Dollar</option>
-                <option value="EUR">🇪🇺 EUR – Euro</option>
-                <option value="EGP">🇪🇬 EGP – Egyptian Pound</option>
-              </select>
-            </div>
-            <div class="fx-row"><label></label><span class="hint">Rate → base</span><span class="hint">Risk ±%</span></div>
-            <div class="fx-row">
-              <label class="cur-badge cur-CHF">CHF</label>
-              <input type="number" class="input-cell" id="fx-CHF" min="0" step="0.0001" />
-              <input type="number" class="input-cell" id="fx-risk-CHF" min="0" step="0.5" value="3" title="Assumed rate move %" />
-            </div>
-            <div class="fx-row">
-              <label class="cur-badge cur-USD">USD</label>
-              <input type="number" class="input-cell" id="fx-USD" min="0" step="0.0001" />
-              <input type="number" class="input-cell" id="fx-risk-USD" min="0" step="0.5" value="3" />
-            </div>
-            <div class="fx-row">
-              <label class="cur-badge cur-EUR">EUR</label>
-              <input type="number" class="input-cell" id="fx-EUR" min="0" step="0.0001" />
-              <input type="number" class="input-cell" id="fx-risk-EUR" min="0" step="0.5" value="3" />
-            </div>
-            <div class="fx-row">
-              <label class="cur-badge cur-EGP">EGP</label>
-              <input type="number" class="input-cell" id="fx-EGP" min="0" step="0.0001" />
-              <input type="number" class="input-cell" id="fx-risk-EGP" min="0" step="0.5" value="5" />
-            </div>
-            <p class="hint">Example: base USD, CHF rate 1.12 means 1 CHF = 1.12 USD. Risk % = assumed adverse move for exposure.</p>
+          <div class="card" style="max-width:520px">
+            <div class="section-title">💱 Exchange rates <span class="badge">Base currency: <strong>🇪🇬 EGP</strong></span></div>
+            <p class="hint" style="margin-bottom:1rem">Type how many EGP you pay for 1 unit of each currency. All totals, profit and margin are shown in EGP.</p>
+            <div class="fx-row"><label class="cur-badge cur-USD">1 USD =</label><input type="number" class="input-cell" id="fx-USD" min="0" step="0.01" /><span>EGP</span></div>
+            <div class="fx-row"><label class="cur-badge cur-EUR">1 EUR =</label><input type="number" class="input-cell" id="fx-EUR" min="0" step="0.01" /><span>EGP</span></div>
+            <div class="fx-row"><label class="cur-badge cur-CHF">1 CHF =</label><input type="number" class="input-cell" id="fx-CHF" min="0" step="0.01" /><span>EGP</span></div>
             <div class="actions">
               <button class="btn btn-success" onclick="saveCurrency()">💾 Save rates</button>
               <button class="btn btn-ghost" onclick="showView('dashboard')">Dashboard</button>
             </div>
-          </div>
-          <div class="card">
-            <div class="section-title">Currency exposure & risk</div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Currency</th>
-                    <th class="num">Selling (orig)</th>
-                    <th class="num">Actual cost (orig)</th>
-                    <th class="num">Net exposure</th>
-                    <th class="num">In base</th>
-                    <th class="num">Risk impact</th>
-                  </tr>
-                </thead>
-                <tbody id="fx-risk-tbody"></tbody>
-              </table>
-            </div>
-            <p class="hint" id="fx-risk-note" style="margin-top:0.8rem">—</p>
           </div>
         </div>
 
@@ -552,9 +521,11 @@
             <ol style="padding-left:1.2rem;line-height:1.85;font-size:0.92rem">
               <li><strong>Step 1 – Estimated (plan):</strong> In Budget + Time set planned cost, mfg days, shipping type, and schedule dates.</li>
               <li><strong>Step 2 – Actual (later):</strong> When the item arrives / invoice comes, open Actual Costs, select the same category, enter real amount and actual mfg/ship days.</li>
+              <li><strong>Auto end date:</strong> Est. End = Est. Start + Mfg days + Shipping days. You can still type a different date (press ↻ to go back to auto).</li>
+              <li><strong>Red alarm:</strong> when the estimated end date arrives and the item is not ticked “Received”, it turns red on the dashboard and in Alarms.</li>
               <li>Estimated values stay as the original plan. Actual values are filled at another time when you receive the item.</li>
               <li>Shipping: ⚡ Express 2w · ✈️ Flight 1.5m · 🚢 Sea 2–3m · 🚚 Local 2w.</li>
-              <li><strong>Currency risk:</strong> CHF · USD · EUR · EGP — set rates & risk % under Currency Risk. Costs/selling convert to base for profit.</li>
+              <li><strong>Currency rates:</strong> base is always EGP. Under Currency Rates type e.g. 1 USD = 50 EGP. Costs and selling in USD / EUR / CHF are converted to EGP for totals and profit.</li>
               <li>Data is saved in this browser. Use JSON export for backup.</li>
             </ol>
             <div class="actions"><button class="btn" onclick="showView('home')">All Projects</button></div>
@@ -593,18 +564,30 @@
     const CURRENCIES = ['CHF', 'USD', 'EUR', 'EGP'];
     const CUR_FLAGS = { CHF: '🇨🇭', USD: '🇺🇸', EUR: '🇪🇺', EGP: '🇪🇬' };
     // Default rates ≈ to USD (user can change). 1 unit foreign = X base when base=USD
-    const DEFAULT_RATES = { CHF: 1.12, USD: 1, EUR: 1.08, EGP: 0.020 };
-    const DEFAULT_RISK = { CHF: 3, USD: 2, EUR: 3, EGP: 5 };
-
-    function getFx(p) {
-      const fx = p.fx || {};
-      const base = fx.base || 'USD';
-      const rates = { ...DEFAULT_RATES, ...(fx.rates || {}) };
-      const risk = { ...DEFAULT_RISK, ...(fx.risk || {}) };
-      // rate always means: 1 CUR = rates[CUR] units of BASE
-      rates[base] = 1;
-      return { base, rates, risk };
+    // Base currency is always EGP. Rate = how many EGP for 1 unit of that currency (1 USD = 50 EGP).
+    // These defaults are only starting placeholders — set your own under Currency Rates.
+    const BASE_CUR = 'EGP';
+    const DEFAULT_RATES = { CHF: 56, USD: 50, EUR: 54, EGP: 1 };
+    function normalizeFx(fx) {
+      fx = fx || {};
+      const oldBase = fx.base || BASE_CUR;
+      const saved = fx.rates || {};
+      const out = { ...DEFAULT_RATES };
+      if (oldBase === BASE_CUR) {
+        Object.keys(saved).forEach(c => { if (Number(saved[c]) > 0) out[c] = Number(saved[c]); });
+      } else {
+        // older projects stored rates relative to another base → convert to EGP
+        const egpPerOld = Number(saved.EGP) > 0 ? 1 / Number(saved.EGP) : 1 / 0.02;
+        CURRENCIES.forEach(c => {
+          const r = c === oldBase ? 1 : Number(saved[c]);
+          if (r > 0) out[c] = Math.round(r * egpPerOld * 10000) / 10000;
+        });
+      }
+      out.EGP = 1;
+      return { base: BASE_CUR, rates: out };
     }
+
+    function getFx(p) { return normalizeFx(p.fx); }
     function toBase(amount, currency, fx) {
       const cur = currency || fx.base;
       const r = fx.rates[cur];
@@ -631,6 +614,7 @@
         estStart: start || '', estEnd: end || '', actStart: '', actEnd: '',
         mfgEstDays: 0, mfgActDays: 0,
         shippingType: '', shipEstDays: 0, shipActDays: 0,
+        received: false, estEndManual: false,
       };
     }
 
@@ -673,13 +657,13 @@
       ];
     }
 
-    let store = { projects: sampleProjects(), currentProjectId: null, user: null };
+    let store = { projects: sampleProjects().map(p => ({ ...p, budget: p.budget.map(normalizeItem) })), currentProjectId: null, user: null };
     let chartProgress = null, chartBudget = null;
     let nextBudgetId = 100, nextCostId = 100, nextProjectId = 10;
 
     const VIEW_TITLES = {
       home: 'All Projects', dashboard: 'Dashboard', project: 'Project Info',
-      budget: 'Budget + Time', costs: 'Actual (when received)', alarms: 'Alarms', currency: 'Currency Risk', export: 'JSON Save / Load', help: 'Help',
+      budget: 'Budget + Time', costs: 'Actual (when received)', alarms: 'Alarms', currency: 'Currency Rates', export: 'JSON Save / Load', help: 'Help',
     };
 
     function loadStore() {
@@ -692,14 +676,8 @@
               ...p,
               info: { selling: 0, sellingCurrency: 'USD', ...p.info },
               thresholds: { minMargin: 15, warning: 80, critical: 95, ...p.thresholds },
-              fx: {
-                base: (p.fx && p.fx.base) || 'USD',
-                rates: { ...DEFAULT_RATES, ...((p.fx && p.fx.rates) || {}) },
-                risk: { ...DEFAULT_RISK, ...((p.fx && p.fx.risk) || {}) },
-              },
-              budget: (p.budget || []).map(b => ({
-                mfgEstDays: 0, mfgActDays: 0, shippingType: '', shipEstDays: 0, shipActDays: 0, currency: 'USD', ...b,
-              })),
+              fx: normalizeFx(p.fx),
+              budget: (p.budget || []).map(normalizeItem),
               costs: (p.costs || []).map(c => ({ currency: 'USD', ...c })),
             }));
           }
@@ -748,21 +726,122 @@
       return formatDisplayDate(b.estStart) + ' → ' + formatDisplayDate(b.estEnd);
     }
     function actRangeText(b) {
-      if (!b.actStart) return 'Not started';
-      return formatDisplayDate(b.actStart) + ' → ' + (b.actEnd ? formatDisplayDate(b.actEnd) : 'ongoing');
+      if (!b.actStart && !b.actEnd) return b.received ? 'Received' : 'Not started';
+      return (b.actStart ? formatDisplayDate(b.actStart) : '—') + ' → ' + (b.actEnd ? formatDisplayDate(b.actEnd) : (b.received ? 'received' : 'ongoing'));
+    }
+
+    // ---- automatic estimated end = est start + mfg days + shipping days ----
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function addDaysISO(iso, n) {
+      const d = parseDate(iso); if (!d) return '';
+      d.setDate(d.getDate() + n);
+      return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    }
+    function autoEstEnd(b) {
+      const total = (Number(b.mfgEstDays) || 0) + (Number(b.shipEstDays) || 0);
+      if (!b.estStart || total <= 0) return '';
+      return addDaysISO(b.estStart, total);
+    }
+    function normalizeItem(b) {
+      const o = { mfgEstDays: 0, mfgActDays: 0, shippingType: '', shipEstDays: 0, shipActDays: 0, currency: 'USD', ...b };
+      if (o.received === undefined) o.received = !!o.actEnd;
+      const a = autoEstEnd(o);
+      if (o.estEndManual === undefined) o.estEndManual = !!o.estEnd && !!a && a !== o.estEnd;
+      if (!o.estEndManual && a) o.estEnd = a;
+      return o;
+    }
+
+    // ---- delivery / received alarm ----
+    function todayMid() { const t = new Date(); t.setHours(0, 0, 0, 0); return t; }
+    function deliveryState(b) {
+      if (b.received) return { state: 'received' };
+      const e = parseDate(b.estEnd);
+      if (!e) return { state: 'none' };
+      const d = daysBetween(e, todayMid());
+      if (d >= 0) return { state: 'overdue', days: d };
+      return { state: 'pending', daysLeft: -d };
     }
     function timeStatus(b) {
-      const est = estDays(b), act = actDays(b);
-      if (!b.actStart) return { label: 'Not started', cls: 'time-soon', variance: null };
-      if (b.actEnd) {
-        const v = act - est;
-        if (v > 0) return { label: 'Done (late +' + v + 'd)', cls: 'time-late', variance: v };
-        if (v < 0) return { label: 'Done (early ' + v + 'd)', cls: 'time-done', variance: v };
-        return { label: 'Done (on time)', cls: 'time-done', variance: 0 };
+      const est = estDays(b), act = actDays(b), ds = deliveryState(b);
+      if (ds.state === 'received') {
+        if (b.actStart && b.actEnd) {
+          const v = act - est;
+          if (est > 0 && v > 0) return { label: '✅ Received (late +' + v + 'd)', cls: 'time-late', variance: v };
+          if (est > 0 && v < 0) return { label: '✅ Received (early ' + v + 'd)', cls: 'time-done', variance: v };
+          return { label: '✅ Received', cls: 'time-done', variance: 0 };
+        }
+        return { label: '✅ Received', cls: 'time-done', variance: null };
       }
+      if (ds.state === 'overdue') {
+        return { label: ds.days === 0 ? '🔴 NOT RECEIVED – due today' : '🔴 NOT RECEIVED – ' + ds.days + 'd overdue', cls: 'time-alarm', variance: ds.days };
+      }
+      if (!b.actStart) return { label: ds.state === 'pending' ? 'Due in ' + ds.daysLeft + 'd' : 'Not started', cls: 'time-soon', variance: null };
       if (est > 0 && act > est) return { label: 'In progress (over)', cls: 'time-late', variance: act - est };
       return { label: 'In progress', cls: 'time-tag', variance: act - est };
     }
+    function overdueItems(p) { return (p.budget || []).filter(b => deliveryState(b).state === 'overdue'); }
+    function renderDeliveryAlarms(p) {
+      const list = overdueItems(p);
+      const badge = document.getElementById('nav-alarm-count');
+      if (badge) { badge.style.display = list.length ? '' : 'none'; badge.textContent = list.length; }
+      const box = document.getElementById('delivery-alarm-banner');
+      if (!box) return;
+      if (!list.length) { box.innerHTML = ''; return; }
+      box.innerHTML = '<div class="alarm-banner"><div class="alarm-title">🚨 ' + list.length + ' item(s) reached the estimated date and are NOT received</div>' +
+        list.map(b => {
+          const d = deliveryState(b).days;
+          return '<div class="alarm-row"><span><strong>' + escapeHtml(b.name) + '</strong> — due ' + formatDisplayDate(b.estEnd) + ' · ' + (d === 0 ? 'today' : d + 'd overdue') +
+            '</span><button class="btn btn-sm btn-success" onclick="toggleReceived(' + b.id + ')">✅ Mark received</button></div>';
+        }).join('') + '</div>';
+    }
+    function renderDeliveryList(p) {
+      const tb = document.getElementById('delivery-alarm-tbody'); if (!tb) return;
+      const items = p.budget || [];
+      if (!items.length) { tb.innerHTML = '<tr><td colspan="4" class="empty">No items</td></tr>'; return; }
+      tb.innerHTML = items.map(b => {
+        const st = timeStatus(b), ds = deliveryState(b);
+        const btn = ds.state === 'received'
+          ? '<button class="btn btn-sm btn-ghost" onclick="toggleReceived(' + b.id + ')">Undo</button>'
+          : '<button class="btn btn-sm btn-success" onclick="toggleReceived(' + b.id + ')">✅ Received</button>';
+        return '<tr><td>' + escapeHtml(b.name) + '</td><td>' + formatDisplayDate(b.estEnd) + '</td><td><span class="time-tag ' + st.cls + '">' + st.label + '</span></td><td>' + btn + '</td></tr>';
+      }).join('');
+    }
+    function toggleReceived(id) {
+      const p = currentProject(); if (!p) return;
+      const b = (p.budget || []).find(x => x.id === id); if (!b) return;
+      b.received = !b.received;
+      saveStore();
+      toast(b.received ? 'Marked as received' : 'Marked as NOT received');
+      const active = document.querySelector('.view.active');
+      const v = active ? active.id : '';
+      if (v === 'view-dashboard') updateDashboard();
+      else if (v === 'view-alarms') fillAlarmForm();
+      else if (v === 'view-costs') fillCostForm();
+    }
+
+    // ---- currency helpers: actual is shown in the currency it was entered in ----
+    function convertCur(amount, from, to, fx) {
+      const baseAmt = toBase(amount, from, fx);
+      const r = fx.rates[to];
+      return r ? baseAmt / r : baseAmt;
+    }
+    function catActuals(p, b, fx) {
+      const itemCur = b.currency || fx.base;
+      const native = {}; let inItem = 0;
+      (p.costs || []).forEach(c => {
+        if (c.category !== b.name) return;
+        const cur = c.currency || fx.base;
+        native[cur] = (native[cur] || 0) + (Number(c.amount) || 0);
+        inItem += convertCur(c.amount, cur, itemCur, fx);
+      });
+      return { itemCur, native, inItem };
+    }
+    function actualText(a) {
+      const keys = Object.keys(a.native);
+      if (!keys.length) return fmtCur(0, a.itemCur);
+      return keys.map(k => fmtCur(a.native[k], k)).join(' + ');
+    }
+    function actualIsForeign(a) { return Object.keys(a.native).some(k => k !== a.itemCur); }
 
     function projectStats(p) {
       const fx = getFx(p);
@@ -844,6 +923,7 @@
         if (p) {
           document.getElementById('hdr-code').textContent = p.info.code;
           document.getElementById('hdr-status').textContent = projectStats(p).statusLabel;
+          renderDeliveryAlarms(p);
         }
       }
       if (name === 'project') fillProjectForm();
@@ -883,9 +963,9 @@
       const overallMargin = totalSell > 0 ? totalProfit / totalSell : 0;
       summary.innerHTML = `
         <div class="summary-stat"><div class="val">${store.projects.length}</div><div class="lbl">Projects</div></div>
-        <div class="summary-stat"><div class="val">${fmt(totalSell)}</div><div class="lbl">Total Selling</div></div>
-        <div class="summary-stat"><div class="val">${fmt(totalActual)}</div><div class="lbl">Total Cost</div></div>
-        <div class="summary-stat"><div class="val ${totalProfit>=0?'profit-pos':'profit-neg'}">${fmt(totalProfit)}</div><div class="lbl">Profit</div></div>
+        <div class="summary-stat"><div class="val">${fmtCur(totalSell, BASE_CUR)}</div><div class="lbl">Total Selling</div></div>
+        <div class="summary-stat"><div class="val">${fmtCur(totalActual, BASE_CUR)}</div><div class="lbl">Total Cost</div></div>
+        <div class="summary-stat"><div class="val ${totalProfit>=0?'profit-pos':'profit-neg'}">${fmtCur(totalProfit, BASE_CUR)}</div><div class="lbl">Profit</div></div>
         <div class="summary-stat"><div class="val">${fmtPct(overallMargin)}</div><div class="lbl">Margin</div></div>
         <div class="summary-stat"><div class="val" style="color:var(--success)">${onTrack}</div><div class="lbl">On Track</div></div>
       `;
@@ -900,8 +980,8 @@
             <div class="progress-label"><span>Budget used</span><span>${fmtPct(s.usedPct)}</span></div>
             <div class="progress-bar"><div class="progress-fill ${s.barClass}" style="width:${Math.min(100,s.usedPct*100)}%"></div></div>
           </div>
-          <div class="meta"><span>Sell: <strong>${fmt(s.selling)}</strong></span><span>Cost: <strong>${fmt(s.totalActual)}</strong></span></div>
-          <div class="meta"><span>Profit: <strong class="${mc}">${fmt(s.profit)}</strong></span><span>Margin: <strong class="${mc}">${fmtPct(s.margin)}</strong></span></div>
+          <div class="meta"><span>Sell: <strong>${fmtCur(s.selling, s.base)}</strong></span><span>Cost: <strong>${fmtCur(s.totalActual, s.base)}</strong></span></div>
+          <div class="meta"><span>Profit: <strong class="${mc}">${fmtCur(s.profit, BASE_CUR)}</strong></span><span>Margin: <strong class="${mc}">${fmtPct(s.margin)}</strong></span></div>
         </div>`;
       }).join('');
     }
@@ -951,9 +1031,8 @@
         ],
         costs: [],
         thresholds: { warning: 80, critical: 95, minMargin: 15 },
-        fx: { base: sellingCurrency, rates: { ...DEFAULT_RATES }, risk: { ...DEFAULT_RISK } },
+        fx: normalizeFx(),
       };
-      p.fx.rates[sellingCurrency] = 1;
       store.projects.push(p);
       saveStore();
       closeNewProjectForm();
@@ -984,9 +1063,10 @@
         daysLeft = Math.max(0, daysBetween(today, end));
         timePct = Math.min(1, daysElapsed / daysTotal);
       }
-      const actualByCat = {};
-      (p.costs || []).forEach(c => { actualByCat[c.category] = (actualByCat[c.category] || 0) + (Number(c.amount) || 0); });
-      return { ...s, timePct, daysElapsed, daysTotal, daysLeft, actualByCat };
+      const actualByCat = {}, actualInfo = {};
+      const fxc = getFx(p);
+      (p.budget || []).forEach(b => { const a = catActuals(p, b, fxc); actualInfo[b.name] = a; actualByCat[b.name] = a.inItem; });
+      return { ...s, timePct, daysElapsed, daysTotal, daysLeft, actualByCat, actualInfo };
     }
 
     function updateDashboard() {
@@ -1013,7 +1093,7 @@
       const statusEl = document.getElementById('kpi-status');
       statusEl.textContent = c.statusLabel; statusEl.className = 'status-badge ' + c.statusClass;
       document.getElementById('hdr-status').textContent = c.statusLabel;
-      let varText = 'Budget left: ' + fmt(c.remaining);
+      let varText = 'Budget left: ' + fmtCur(c.remaining, c.base);
       if (c.selling > 0 && !c.marginOk) varText += ' · ⚠ Margin below ' + c.minMargin + '%';
       document.getElementById('kpi-variance').textContent = varText;
       document.getElementById('lbl-time').textContent = fmtPct(c.timePct);
@@ -1023,16 +1103,18 @@
       document.getElementById('progress-insight').textContent = insight;
 
       const p = currentProject();
+      renderDeliveryAlarms(p);
       renderItemBlocks(p, c);
       document.getElementById('band-tbody').innerHTML = (p.budget || []).map(b => {
         const actual = c.actualByCat[b.name] || 0;
         const costPct = b.estimated > 0 ? actual / b.estimated : 0;
+        const ai = catActuals(p, b, getFx(p));
         const ed = estDays(b), ad = actDays(b), st = timeStatus(b);
         const mfgEst = Number(b.mfgEstDays) || 0, mfgAct = Number(b.mfgActDays) || 0;
         const shipEst = Number(b.shipEstDays) || 0, shipAct = Number(b.shipActDays) || 0;
         return `<tr>
           <td>${escapeHtml(b.name)}</td>
-          <td class="num">${fmtCur(b.estimated, b.currency||c.base)} </td><td class="num">${fmt(actual)}</td><td class="num">${fmtPct(costPct)}</td>
+          <td class="num">${fmtCur(b.estimated, b.currency||c.base)} </td><td class="num">${actualText(ai)}</td><td class="num">${fmtPct(costPct)}</td>
           <td class="num">${mfgEst || '—'}</td><td class="num">${mfgAct || '—'}</td>
           <td>${shipBadgeHtml(b.shippingType)}</td>
           <td class="num">${shipEst || '—'}</td><td class="num">${shipAct || '—'}</td>
@@ -1044,7 +1126,7 @@
       const recent = [...(p.costs || [])].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 8);
       const rb = document.getElementById('recent-cost-tbody');
       if (!recent.length) rb.innerHTML = `<tr><td colspan="3" class="empty">No costs yet</td></tr>`;
-      else rb.innerHTML = recent.map(x => `<tr><td>${formatDisplayDate(x.date)}</td><td>${escapeHtml(x.category)}</td><td class="num">${fmt(x.amount)}</td></tr>`).join('');
+      else rb.innerHTML = recent.map(x => `<tr><td>${formatDisplayDate(x.date)}</td><td>${escapeHtml(x.category)}</td><td class="num">${fmtCur(x.amount, x.currency || getFx(p).base)}</td></tr>`).join('');
       updateCharts(c);
       saveStore();
     }
@@ -1085,20 +1167,21 @@
         const pct = estimated > 0 ? actual / estimated : 0;
         const stat = itemStatus(pct, th);
         const remaining = estimated - actual;
+        const ai = catActuals(p, b, getFx(p)), ds = deliveryState(b), icur = b.currency || c.base;
         const ed = estDays(b), ad = actDays(b), st = timeStatus(b);
         const mfgEst = Number(b.mfgEstDays) || 0, mfgAct = Number(b.mfgActDays) || 0;
         const shipEst = Number(b.shipEstDays) || 0, shipAct = Number(b.shipActDays) || 0;
         return `
-          <div class="item-block ${stat.cls}">
+          <div class="item-block ${stat.cls}${ds.state === 'overdue' ? ' st-alarm' : ''}">
             <div class="item-block-head">
               <h4>${escapeHtml(b.name)}</h4>
               <span class="status-badge ${stat.badge}" style="font-size:0.66rem;padding:0.22rem 0.55rem;white-space:nowrap">${stat.label}</span>
             </div>
             <div class="item-numbers">
               <div class="item-num"><div class="item-num-label">Estimated</div><div class="item-num-value">${fmtCur(estimated, b.currency)}</div></div>
-              <div class="item-num"><div class="item-num-label">Actual</div><div class="item-num-value">${fmt(actual)}</div></div>
+              <div class="item-num"><div class="item-num-label">Actual</div><div class="item-num-value">${actualText(ai)}${actualIsForeign(ai) ? '<div style="font-size:0.62rem;opacity:0.65;font-weight:400">≈ ' + fmtCur(actual, icur) + '</div>' : ''}</div></div>
               <div class="item-num"><div class="item-num-label">Used</div><div class="item-num-value">${estimated > 0 ? fmtPct(pct) : '—'}</div></div>
-              <div class="item-num"><div class="item-num-label">Remaining</div><div class="item-num-value" style="${remaining < 0 ? 'color:var(--danger)' : ''}">${fmt(remaining)}</div></div>
+              <div class="item-num"><div class="item-num-label">Remaining</div><div class="item-num-value" style="${remaining < 0 ? 'color:var(--danger)' : ''}">${fmtCur(remaining, icur)}</div></div>
             </div>
             <div class="progress-bar"><div class="progress-fill ${stat.bar}" style="width:${Math.min(100, pct * 100)}%"></div></div>
             <div class="item-group-title">Manufacturing (days)</div>
@@ -1119,6 +1202,7 @@
             <div class="item-foot">
               ${shipBadgeHtml(b.shippingType)}
               <span class="time-tag ${st.cls}">${st.label}</span>
+              ${ds.state === 'overdue' ? '<button class="btn btn-sm btn-success" onclick="toggleReceived(' + b.id + ')">✅ Received</button>' : ''}
             </div>
           </div>`;
       }).join('');
@@ -1217,20 +1301,77 @@
           <td class="num"><input type="number" class="input-cell" data-idx="${i}" data-field="shipEstDays" id="ship-est-${i}" value="${b.shipEstDays||0}" min="0" style="min-width:80px" /></td>
           <td class="num"><input type="number" class="input-cell" data-idx="${i}" data-field="shipActDays" value="${b.shipActDays||0}" min="0" style="min-width:80px" /></td>
           <td><input type="date" class="input-cell" data-idx="${i}" data-field="estStart" value="${b.estStart||''}" style="min-width:150px" /></td>
-          <td><input type="date" class="input-cell" data-idx="${i}" data-field="estEnd" value="${b.estEnd||''}" style="min-width:150px" /></td>
-          <td class="num">${estDays(b)||'—'}</td>
+          <td style="white-space:nowrap"><input type="date" class="input-cell" data-idx="${i}" data-field="estEnd" data-manual="${b.estEndManual ? 1 : 0}" value="${b.estEnd||''}" style="min-width:150px" />
+            <button class="btn btn-sm btn-ghost" title="Recalculate automatically: Est. Start + Mfg + Ship" onclick="resetEstEndAuto(${i})">↻</button>
+            <div class="hint" id="end-mode-${i}" style="margin:0.15rem 0 0">${b.estEndManual ? '✎ manual' : '⚙ auto'}</div></td>
+          <td class="num" id="est-d-${i}">${estDays(b)||'—'}</td>
           <td><input type="date" class="input-cell" data-idx="${i}" data-field="actStart" value="${b.actStart||''}" style="min-width:150px" /></td>
           <td><input type="date" class="input-cell" data-idx="${i}" data-field="actEnd" value="${b.actEnd||''}" style="min-width:150px" /></td>
           <td class="num">${actDays(b)||(b.actStart?'…':'—')}</td>
+          <td style="text-align:center"><input type="checkbox" data-idx="${i}" data-field="received" ${b.received ? 'checked' : ''} style="width:18px;height:18px" /></td>
           <td><button class="btn btn-sm btn-danger" onclick="deleteCategory(${b.id})">✕</button></td>
         </tr>`).join('');
-      document.getElementById('budget-total-label').textContent = fmt((p.budget||[]).reduce((s,b)=>s+(Number(b.estimated)||0),0));
+      document.getElementById('budget-total-label').textContent = fmtCur(projectStats(p).totalBudget, getFx(p).base);
       document.getElementById('new-cat-name').value = '';
       document.getElementById('new-cat-amount').value = '';
       document.getElementById('new-cat-mfg').value = '0';
       document.getElementById('new-cat-ship').value = '';
       document.getElementById('new-cat-est-start').value = p.info.start || '';
       document.getElementById('new-cat-est-end').value = p.info.end || '';
+      newCatEndManual = false;
+      onNewCatAutoEnd();
+    }
+
+    // ---- live auto-calculation of Est. End in the table + add form ----
+    let newCatEndManual = false;
+    function onNewCatAutoEnd() {
+      const mode = document.getElementById('new-cat-end-mode');
+      if (newCatEndManual) return;
+      const a = autoEstEnd({
+        estStart: document.getElementById('new-cat-est-start').value,
+        mfgEstDays: document.getElementById('new-cat-mfg').value,
+        shipEstDays: shipEstFromType(document.getElementById('new-cat-ship').value),
+      });
+      if (a) document.getElementById('new-cat-est-end').value = a;
+      if (mode) mode.textContent = '⚙ auto = Start + Mfg + Ship';
+    }
+    function onNewCatEndTyped() {
+      const v = document.getElementById('new-cat-est-end').value;
+      newCatEndManual = !!v;
+      document.getElementById('new-cat-end-mode').textContent = v ? '✎ manual (clear it to go back to auto)' : '⚙ auto = Start + Mfg + Ship';
+      if (!v) onNewCatAutoEnd();
+    }
+    function rowEl(i, field) { return document.querySelector('#budget-edit-tbody [data-idx="' + i + '"][data-field="' + field + '"]'); }
+    function setEndMode(i, manual) {
+      const m = document.getElementById('end-mode-' + i); if (m) m.textContent = manual ? '✎ manual' : '⚙ auto';
+    }
+    function updateEstD(i) {
+      const st = parseDate(rowEl(i, 'estStart').value), en = parseDate(rowEl(i, 'estEnd').value);
+      const cell = document.getElementById('est-d-' + i);
+      if (cell) cell.textContent = (st && en && en > st) ? daysBetween(st, en) : '—';
+    }
+    function recalcRowEnd(i) {
+      const endEl = rowEl(i, 'estEnd'); if (!endEl || endEl.dataset.manual === '1') return false;
+      const a = autoEstEnd({
+        estStart: rowEl(i, 'estStart').value,
+        mfgEstDays: rowEl(i, 'mfgEstDays').value,
+        shipEstDays: rowEl(i, 'shipEstDays').value,
+      });
+      if (a) { endEl.value = a; updateEstD(i); return true; }
+      return false;
+    }
+    function resetEstEndAuto(i) {
+      const endEl = rowEl(i, 'estEnd'); endEl.dataset.manual = '0';
+      if (!recalcRowEnd(i)) toast('Enter Est. Start and Mfg / Shipping days first', 'error');
+      setEndMode(i, false);
+    }
+    document.getElementById('budget-edit-tbody').addEventListener('input', onBudgetRowInput);
+    document.getElementById('budget-edit-tbody').addEventListener('change', onBudgetRowInput);
+    function onBudgetRowInput(e) {
+      const inp = e.target, field = inp.dataset.field; if (!field) return;
+      const i = inp.dataset.idx;
+      if (field === 'estEnd') { inp.dataset.manual = inp.value ? '1' : '0'; setEndMode(i, !!inp.value); if (!inp.value) recalcRowEnd(i); updateEstD(i); return; }
+      if (['estStart', 'mfgEstDays', 'shipEstDays', 'shippingType'].includes(field)) { recalcRowEnd(i); updateEstD(i); }
     }
 
     function saveBudget() {
@@ -1240,11 +1381,13 @@
         if (field === 'name') { const n = inp.value.trim(); if (n) p.budget[i].name = n; }
         else if (['estimated','mfgEstDays','mfgActDays','shipEstDays','shipActDays'].includes(field)) p.budget[i][field] = Number(inp.value) || 0;
         else if (field === 'currency') p.budget[i].currency = inp.value || 'USD';
+        else if (field === 'received') p.budget[i].received = inp.checked;
         else if (field === 'shippingType') {
           p.budget[i].shippingType = inp.value;
           if (inp.value) p.budget[i].shipEstDays = shipEstFromType(inp.value);
         }
-        else if (['estStart','estEnd','actStart','actEnd'].includes(field)) p.budget[i][field] = inp.value;
+        else if (field === 'estEnd') { p.budget[i].estEnd = inp.value; p.budget[i].estEndManual = inp.dataset.manual === '1'; }
+        else if (['estStart','actStart','actEnd'].includes(field)) p.budget[i][field] = inp.value;
       });
       // re-read ship est after type may have changed
       document.querySelectorAll('#budget-edit-tbody input[data-field="shipEstDays"]').forEach(inp => {
@@ -1270,7 +1413,8 @@
         shippingType: shipType, shipEstDays: shipEstFromType(shipType), shipActDays: 0,
         estStart: document.getElementById('new-cat-est-start').value || p.info.start || '',
         estEnd: document.getElementById('new-cat-est-end').value || p.info.end || '',
-        actStart: '', actEnd: '',
+        estEndManual: newCatEndManual,
+        actStart: '', actEnd: '', received: false,
       });
       saveStore();
       toast('Category added');
@@ -1297,15 +1441,18 @@
         document.getElementById('c-ship-act').value = '';
         document.getElementById('c-act-start').value = '';
         document.getElementById('c-act-end').value = '';
+        document.getElementById('c-received').checked = false;
         return;
       }
       const ship = b.shippingType ? shipBadgeHtml(b.shippingType) : '—';
       preview.style.display = 'block';
       preview.innerHTML =
-        '<strong>Estimated plan:</strong> Cost ' + fmt(b.estimated) +
+        '<strong>Estimated plan:</strong> Cost ' + fmtCur(b.estimated, b.currency || getFx(p).base) +
         ' · Mfg ' + (b.mfgEstDays || 0) + 'd' +
         ' · Ship ' + ship + (b.shipEstDays ? ' (' + b.shipEstDays + 'd)' : '') +
-        '<br><span style="opacity:0.85">Enter actual cost & times below when you receive this item.</span>';
+        ' · Est. arrival ' + formatDisplayDate(b.estEnd) +
+        (deliveryState(b).state === 'overdue' ? '<br><strong style="color:#fca5a5">🔴 Estimated date arrived — not received yet</strong>' : '') +
+        '<br><span style="opacity:0.85">Enter actual cost below. Dates are optional.</span>';
       document.getElementById('c-category-new').value = '';
       // show existing actuals if any (can overwrite)
       document.getElementById('c-mfg-act').value = b.mfgActDays || '';
@@ -1313,7 +1460,11 @@
       document.getElementById('c-act-start').value = b.actStart || '';
       document.getElementById('c-act-end').value = b.actEnd || '';
       document.getElementById('c-currency').value = b.currency || getFx(p).base || 'USD';
+      document.getElementById('c-received').checked = !!b.received;
     }
+    document.getElementById('c-act-end').addEventListener('change', function () {
+      if (this.value) document.getElementById('c-received').checked = true;
+    });
     function onNewCatInput() {
       const v = document.getElementById('c-category-new').value.trim();
       if (v) document.getElementById('c-cat-preview').style.display = 'none';
@@ -1321,7 +1472,9 @@
 
     function fillCostForm() {
       const p = currentProject(); if (!p) return;
-      document.getElementById('c-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('c-date').value = '';
+      editingCostId = null;
+      document.getElementById('btn-save-cost').textContent = '💾 Save actual';
       document.getElementById('c-desc').value = '';
       document.getElementById('c-vendor').value = '';
       document.getElementById('c-amount').value = '';
@@ -1336,54 +1489,71 @@
         sel.innerHTML = '<option value="">— Add categories in Budget first —</option>';
       } else {
         sel.innerHTML = items.map(b => {
-          const spent = (p.costs || []).filter(c => c.category === b.name).reduce((s, c) => s + (Number(c.amount) || 0), 0);
-          const left = (Number(b.estimated) || 0) - spent;
+          const cc = b.currency || getFx(p).base;
+          const spent = catActuals(p, b, getFx(p)).inItem;
           return '<option value="' + escapeHtml(b.name) + '">' + escapeHtml(b.name) +
-            '  ·  Est ' + fmt(b.estimated) + '  ·  Spent ' + fmt(spent) + '</option>';
+            '  ·  Est ' + fmtCur(b.estimated, cc) + '  ·  Spent ' + fmtCur(spent, cc) + '</option>';
         }).join('');
       }
       onCostCategoryChange();
-      document.getElementById('cost-total-label').textContent = fmt((p.costs||[]).reduce((s,c)=>s+(Number(c.amount)||0),0));
+      document.getElementById('cost-total-label').textContent = fmtCur(projectStats(p).totalActual, getFx(p).base);
       const tbody = document.getElementById('cost-tbody');
       if (!(p.costs||[]).length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No costs</td></tr>'; return; }
       const sorted = [...p.costs].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
       tbody.innerHTML = sorted.map(c => '<tr>' +
         '<td>' + formatDisplayDate(c.date) + '</td><td>' + escapeHtml(c.category) + '</td><td>' + escapeHtml(c.desc||'—') + '</td>' +
         '<td class="num">' + fmtCur(c.amount, c.currency || 'USD') + '</td>' +
-        '<td><button class="btn btn-sm btn-danger" onclick="deleteCost(' + c.id + ')">✕</button></td>' +
+        '<td style="white-space:nowrap"><button class="btn btn-sm btn-ghost" onclick="editCost(' + c.id + ')">✎</button> <button class="btn btn-sm btn-danger" onclick="deleteCost(' + c.id + ')">✕</button></td>' +
       '</tr>').join('');
+    }
+    let editingCostId = null;
+    function editCost(id) {
+      const p = currentProject(); if (!p) return;
+      const c = (p.costs || []).find(x => x.id === id); if (!c) return;
+      const sel = document.getElementById('c-category');
+      if ([...sel.options].some(o => o.value === c.category)) sel.value = c.category;
+      onCostCategoryChange();
+      document.getElementById('c-date').value = c.date || '';
+      document.getElementById('c-desc').value = c.desc || '';
+      document.getElementById('c-vendor').value = c.vendor || '';
+      document.getElementById('c-amount').value = c.amount;
+      document.getElementById('c-currency').value = c.currency || getFx(p).base;
+      editingCostId = id;
+      document.getElementById('btn-save-cost').textContent = '💾 Update actual';
+      toast('Editing — change values then press Update');
+      window.scrollTo(0, 0);
     }
     function addCost() {
       const p = currentProject(); if (!p) return;
-      const date = document.getElementById('c-date').value;
+      const date = document.getElementById('c-date').value; // optional – never assumed
       let category = document.getElementById('c-category-new').value.trim() || document.getElementById('c-category').value;
       const desc = document.getElementById('c-desc').value.trim();
       const vendor = document.getElementById('c-vendor').value.trim();
       const amount = Number(document.getElementById('c-amount').value);
-      if (!date || !category || !amount || amount <= 0) { toast('Fill date, category, amount', 'error'); return; }
+      if (!category || !amount || amount <= 0) { toast('Fill category and amount', 'error'); return; }
+      const currency = document.getElementById('c-currency').value || getFx(p).base;
       let item = p.budget.find(b => b.name.toLowerCase() === category.toLowerCase());
       if (!item) {
-        item = emptyItem(nextBudgetId++, category, p.info.start, p.info.end);
+        item = emptyItem(nextBudgetId++, category, p.info.start, p.info.end, currency);
         p.budget.push(item);
       }
-      // Update actual times on the category (estimated stays unchanged)
+      category = item.name;
+      // Actual times: saved exactly as typed (empty stays empty) – no date is assumed
       const mfgAct = document.getElementById('c-mfg-act').value;
       const shipAct = document.getElementById('c-ship-act').value;
-      const actStart = document.getElementById('c-act-start').value;
-      const actEnd = document.getElementById('c-act-end').value;
       if (mfgAct !== '') item.mfgActDays = Number(mfgAct) || 0;
       if (shipAct !== '') item.shipActDays = Number(shipAct) || 0;
-      if (actStart) item.actStart = actStart;
-      if (actEnd) item.actEnd = actEnd;
-      // if only date given and no act end, use invoice/received date as act end
-      if (!item.actEnd && date) item.actEnd = date;
-      if (!item.actStart && date) item.actStart = date;
+      item.actStart = document.getElementById('c-act-start').value;
+      item.actEnd = document.getElementById('c-act-end').value;
+      item.received = document.getElementById('c-received').checked;
 
-      const currency = document.getElementById('c-currency').value || getFx(p).base;
       if (!p.costs) p.costs = [];
-      p.costs.push({ id: nextCostId++, date, category, desc, vendor, amount, currency });
+      const existing = editingCostId != null ? p.costs.find(x => x.id === editingCostId) : null;
+      if (existing) Object.assign(existing, { date, category, desc, vendor, amount, currency });
+      else p.costs.push({ id: nextCostId++, date, category, desc, vendor, amount, currency });
+      editingCostId = null;
       saveStore();
-      toast('Actual cost & time saved');
+      toast('Actual cost saved');
       fillCostForm();
     }
     function deleteCost(id) {
@@ -1402,6 +1572,8 @@
       document.getElementById('th-critical').value = th.critical;
       document.getElementById('th-margin').value = th.minMargin ?? 15;
       document.getElementById('lbl-th-warn').textContent = th.warning + '%';
+      renderDeliveryList(p);
+      renderDeliveryAlarms(p);
     }
     function saveAlarms() {
       const p = currentProject(); if (!p) return;
@@ -1421,73 +1593,19 @@
     function fillCurrencyForm() {
       const p = currentProject(); if (!p) return;
       const fx = getFx(p);
-      document.getElementById('fx-base').value = fx.base;
-      document.getElementById('fx-base-label').textContent = fx.base;
-      CURRENCIES.forEach(c => {
-        document.getElementById('fx-' + c).value = fx.rates[c] != null ? fx.rates[c] : (DEFAULT_RATES[c] || 1);
-        document.getElementById('fx-risk-' + c).value = fx.risk[c] != null ? fx.risk[c] : (DEFAULT_RISK[c] || 3);
-        document.getElementById('fx-' + c).disabled = (c === fx.base);
-        if (c === fx.base) document.getElementById('fx-' + c).value = 1;
-      });
-      renderFxRisk(p, fx);
-    }
-    function onBaseCurrencyChange() {
-      const base = document.getElementById('fx-base').value;
-      document.getElementById('fx-base-label').textContent = base;
-      CURRENCIES.forEach(c => {
-        document.getElementById('fx-' + c).disabled = (c === base);
-        if (c === base) document.getElementById('fx-' + c).value = 1;
-      });
+      ['USD', 'EUR', 'CHF'].forEach(c => { document.getElementById('fx-' + c).value = fx.rates[c]; });
     }
     function saveCurrency() {
       const p = currentProject(); if (!p) return;
-      const base = document.getElementById('fx-base').value;
-      const rates = {}, risk = {};
-      CURRENCIES.forEach(c => {
-        rates[c] = c === base ? 1 : (Number(document.getElementById('fx-' + c).value) || DEFAULT_RATES[c] || 1);
-        risk[c] = Number(document.getElementById('fx-risk-' + c).value) || DEFAULT_RISK[c] || 3;
-      });
-      p.fx = { base, rates, risk };
+      const rates = { EGP: 1 };
+      for (const c of ['USD', 'EUR', 'CHF']) {
+        const v = Number(document.getElementById('fx-' + c).value);
+        if (!(v > 0)) { toast('Enter a rate for ' + c, 'error'); return; }
+        rates[c] = v;
+      }
+      p.fx = { base: BASE_CUR, rates };
       saveStore();
-      toast('Currency rates saved');
-      renderFxRisk(p, getFx(p));
-    }
-    function renderFxRisk(p, fx) {
-      const sellCur = p.info.sellingCurrency || fx.base;
-      const sellAmt = Number(p.info.selling) || 0;
-      const byCur = {};
-      CURRENCIES.forEach(c => { byCur[c] = { sell: 0, cost: 0 }; });
-      byCur[sellCur].sell += sellAmt;
-      (p.costs || []).forEach(c => {
-        const cur = c.currency || fx.base;
-        if (!byCur[cur]) byCur[cur] = { sell: 0, cost: 0 };
-        byCur[cur].cost += Number(c.amount) || 0;
-      });
-      let totalRisk = 0;
-      const rows = CURRENCIES.map(c => {
-        const sell = byCur[c].sell;
-        const cost = byCur[c].cost;
-        const net = sell - cost; // positive = long foreign currency
-        const inBase = toBase(net, c, fx);
-        const riskPct = (fx.risk[c] || 0) / 100;
-        // adverse: if net > 0 (receive that currency), rate drop hurts; if net < 0 (pay that currency), rate rise hurts
-        const impact = Math.abs(inBase) * riskPct;
-        totalRisk += impact;
-        if (sell === 0 && cost === 0) return null;
-        return '<tr>' +
-          '<td><span class="cur-badge cur-' + c + '">' + (CUR_FLAGS[c] || '') + ' ' + c + '</span></td>' +
-          '<td class="num">' + (sell ? fmtCur(sell, c) : '—') + '</td>' +
-          '<td class="num">' + (cost ? fmtCur(cost, c) : '—') + '</td>' +
-          '<td class="num">' + fmtCur(net, c) + '</td>' +
-          '<td class="num">' + fmtCur(inBase, fx.base) + '</td>' +
-          '<td class="num" style="color:var(--warning)">± ' + fmtCur(impact, fx.base) + '</td>' +
-        '</tr>';
-      }).filter(Boolean);
-      document.getElementById('fx-risk-tbody').innerHTML = rows.length ? rows.join('') :
-        '<tr><td colspan="6" class="empty">No multi-currency amounts yet</td></tr>';
-      document.getElementById('fx-risk-note').textContent =
-        'Base: ' + fx.base + ' · Approx. total FX risk (sum of ± moves): ' + fmtCur(totalRisk, fx.base) +
-        '. Risk uses your ±% on each currency exposure.';
+      toast('Rates saved');
     }
 
     function exportJSON() {
@@ -1515,9 +1633,7 @@
             ...p,
             info: { selling: 0, ...p.info },
             thresholds: { minMargin: 15, warning: 80, critical: 95, ...p.thresholds },
-            budget: (p.budget || []).map(b => ({
-              mfgEstDays: 0, mfgActDays: 0, shippingType: '', shipEstDays: 0, shipActDays: 0, ...b,
-            })),
+            budget: (p.budget || []).map(normalizeItem),
           }));
           store.currentProjectId = null;
           saveStore();
